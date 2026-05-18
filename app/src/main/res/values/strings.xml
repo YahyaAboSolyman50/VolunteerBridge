@@ -1,0 +1,44 @@
+<resources>
+    <string name="app_name">Volunteer Bridge</string>
+    <string name="description_app">The Volunteer Bridge\nA digital platform to organize volunteer work under the supervision of the IUG</string>
+
+    <string name="start_now">Start Now</string>
+    <string name="next">Next</string>
+    <string name="page_2">This application was created by students of the IUG</string>
+    <string name="page_3">Start looking for your chance to volunteer</string>
+
+    <string name="name">Organization Name</string>
+    <string name="password">Password</string>
+    <string name="email">Email Address</string>
+    <string name="forget_password">Forgot Password?</string>
+    <string name="or">Or login with:</string>
+    <string name="google">Google</string>
+    <string name="HavaAccount">Don\'t have an account?</string>
+    <string name="signup">Sign Up</string>
+    <string name="create">Create your organization account</string>
+    <string name="license_num">License Number : 0000 / 2024</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="phone">Phone Number</string>
+    <string name="selectOrg">Select Organization</string>
+
+    <string name="savedData">Creating account and saving data…</string>
+    <string name="verification">Your account will be verified by the university admin.</string>
+
+    <string name="err_fill">Please fill in all required fields</string>
+    <string name="err_name_req">Organization name is required</string>
+    <string name="err_email_invalid">Please enter a valid email address</string>
+    <string name="err_license_req">Official license ID is required</string>
+    <string name="err_phone_req">Phone number is required</string>
+    <string name="err_phone_format">Format: 059XXXXXXX or 056XXXXXXX</string>
+    <string name="err_pass_short">Password must be at least 8 characters</string>
+    <string name="err_pass_digit">Password must contain at least one number</string>
+    <string name="err_pass_upper">Password must contain an uppercase letter</string>
+    <string name="err_pass_match">Passwords do not match</string>
+    <string name="TotalHours">"Your Total Volunteer Hours: "</string>
+    <string name="hour">0 Hour</string>
+    <string name="manageOpp">Manage Opportunities</string>
+    <string name="ActivePost">Active Posting</string>
+    <string name="description">Description</string>
+    <string name="DetailOpp">Detail Opportunit</string>
+    <string name="app">Applicant Requests</string>
+</resources>

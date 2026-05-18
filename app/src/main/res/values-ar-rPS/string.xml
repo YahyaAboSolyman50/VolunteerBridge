@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">جسر المتطوعين</string>
+    <string name="description_app">جسر المتطوعين\nمنصة رقمية لتنظيم العمل التطوعي تحت إشراف الجامعة الإسلامية بغزة</string>
+
+    <string name="start_now">ابدأ الآن</string>
+    <string name="next">التالي</string>
+    <string name="page_2">تم تطوير هذا التطبيق بواسطة طلاب من الجامعة الإسلامية</string>
+    <string name="page_3">ابدأ البحث عن فرصتك للتطوع الآن</string>
+
+    <string name="name">اسم المؤسسة</string>
+    <string name="password">كلمة المرور</string>
+    <string name="email">البريد الإلكتروني</string>
+    <string name="forget_password">نسيت كلمة المرور؟</string>
+    <string name="or">أو الدخول عبر:</string>
+    <string name="google">جوجل</string>
+    <string name="HavaAccount">ليس لديك حساب؟</string>
+    <string name="signup">إنشاء حساب</string>
+    <string name="create">إنشاء حساب مؤسسة جديد</string>
+    <string name="license_num">رقم الترخيص</string>
+    <string name="confirm_password">تأكيد كلمة المرور</string>
+    <string name="phone">رقم الهاتف</string>
+    <string name="selectOrg">اختر المؤسسة</string>
+
+    <string name="savedData">جاري إنشاء الحساب وحفظ البيانات…</string>
+    <string name="verification">سيتم مراجعة حسابك وتوثيقه من قبل إدارة الجامعة.</string>
+
+    <string name="err_fill">يرجى ملء جميع الحقول المطلوبة</string>
+    <string name="err_name_req">اسم المؤسسة مطلوب</string>
+    <string name="err_email_invalid">يرجى إدخال بريد إلكتروني صحيح</string>
+    <string name="err_license_req">رقم الترخيص الرسمي مطلوب</string>
+    <string name="err_phone_req">رقم الهاتف مطلوب</string>
+    <string name="err_phone_format">الصيغة المطلوبة: 059XXXXXXX أو 056XXXXXXX</string>
+    <string name="err_pass_short">كلمة المرور يجب أن تكون 8 رموز على الأقل</string>
+    <string name="err_pass_digit">يجب أن تحتوي كلمة المرور على رقم واحد على الأقل</string>
+    <string name="err_pass_upper">يجب أن تحتوي على حرف كبير واحد على الأقل</string>
+    <string name="err_pass_match">كلمات المرور غير متطابقة</string>
+</resources>
