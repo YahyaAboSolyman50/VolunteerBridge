@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -23,21 +23,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-
+import com.example.volunteerbridge.app.R
 
 @Composable
 fun VerificationRequiredScreen(onVerifyClick: () -> Unit) {
+    val colorScheme = MaterialTheme.colorScheme
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(colorScheme.background)
             .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // أيقونة قفل أو حماية
+        // أيقونة قفل للدلالة على الأمان والتوثيق
         Box(
             modifier = Modifier
                 .size(100.dp)
@@ -45,8 +49,8 @@ fun VerificationRequiredScreen(onVerifyClick: () -> Unit) {
             contentAlignment = Alignment.Center
         ) {
             Icon(
-                imageVector = Icons.Default.Info, // يمكنك تغييرها لأيقونة Lock
-                contentDescription = null,
+                imageVector = Icons.Default.Lock,
+                contentDescription = stringResource(R.string.lock_icon_desc),
                 modifier = Modifier.size(50.dp),
                 tint = Color(0xFFF44336)
             )
@@ -55,18 +59,18 @@ fun VerificationRequiredScreen(onVerifyClick: () -> Unit) {
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "Verification Required",
+            text = stringResource(R.string.verification_required_title),
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
-            color = Color(0xFF042A63)
+            color = colorScheme.onBackground
         )
 
         Spacer(modifier = Modifier.height(12.dp))
 
         Text(
-            text = "You must verify your organization account to access management features and post new volunteer opportunities.",
+            text = stringResource(R.string.verification_required_desc),
             style = MaterialTheme.typography.bodyMedium,
-            color = Color.Gray,
+            color = colorScheme.onBackground.copy(alpha = 0.6f),
             textAlign = TextAlign.Center
         )
 
@@ -75,11 +79,17 @@ fun VerificationRequiredScreen(onVerifyClick: () -> Unit) {
         // زر التوثيق
         Button(
             onClick = onVerifyClick,
-            modifier = Modifier.fillMaxWidth().height(50.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
             shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0A4DB3))
+            colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary)
         ) {
-            Text("Verify My Account", color = Color.White, fontWeight = FontWeight.Bold)
+            Text(
+                text = stringResource(R.string.verify_my_account_button),
+                color = colorScheme.onPrimary,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }

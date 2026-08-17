@@ -1,108 +1,159 @@
 package com.example.volunteerbridge.view.home
 
+import android.os.Build
 import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import com.example.volunteerbridge.model.UserType
-import com.example.volunteerbridge.viewmodel.AuthViewModel
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.example.volunteerbridge.data.model.TokenManager
+import com.example.volunteerbridge.model.UserType
 import com.example.volunteerbridge.model.classes.Destination
 import com.example.volunteerbridge.nav.AppNavHost
 import com.example.volunteerbridge.screens.Screen
 import com.example.volunteerbridge.view.admin.AdminDashboardScreen
-import com.example.volunteerbridge.viewmodel.AdminViewModel
-import com.example.volunteerbridge.viewmodel.ApplicationsViewModel
-import com.example.volunteerbridge.viewmodel.NotViewModel
-import com.example.volunteerbridge.viewmodel.OpportunityViewModel
-import com.example.volunteerbridge.viewmodel.OrgViewModel
-import com.example.volunteerbridge.viewmodel.StudentViewModel
-import com.example.volunteerbridge.viewmodel.TaskViewModel
+import com.example.volunteerbridge.model.classes.status.AuthState
+import com.example.volunteerbridge.network.NetworkConnectivityObserver
+import com.example.volunteerbridge.viewmodelApi.AdminViewModelApi
+import com.example.volunteerbridge.viewmodelApi.AttendanceViewModel
+import com.example.volunteerbridge.viewmodelApi.AuthViewModelApi
+import com.example.volunteerbridge.viewmodelApi.NotViewModel
+import com.example.volunteerbridge.viewmodelApi.OrganizationViewModel
+import com.example.volunteerbridge.viewmodelApi.ParticipationViewModel
+import com.example.volunteerbridge.viewmodelApi.ActivityViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(
     rootNavController: NavHostController,
-    authViewModel: AuthViewModel,
-    oppViewModel: OpportunityViewModel,
+    authViewModelApi: AuthViewModelApi,
     notViewModel: NotViewModel,
-    orgViewModel: OrgViewModel,
-    stuViewModel: StudentViewModel,
-    taskViewModel: TaskViewModel,
-    adminViewModel: AdminViewModel,
-    appViewModel: ApplicationsViewModel
+    activityViewModel: ActivityViewModel,
+    adminViewModel: AdminViewModelApi,
+    organizationViewModel: OrganizationViewModel,
+    studentViewModel: com.example.volunteerbridge.viewmodelApi.StudentViewModel,
+    attendanceViewModel: AttendanceViewModel,
+    participationViewModel: ParticipationViewModel
 ) {
-    val userType by authViewModel.userType.collectAsState()
-    val isEmailVerified by remember { orgViewModel.isEmailVerified }
+    val context = LocalContext.current
+    val networkObserver = remember { NetworkConnectivityObserver(context) }
+    val isOnline by networkObserver.isConnected.collectAsStateWithLifecycle(initialValue = true)
 
-    // مراقبة حالة توثيق المؤسسة الحالية من الـ Firestore
-    val currentOrgData by orgViewModel.currentOrgData
-    val isVerified = currentOrgData?.verified ?: false
+    val authState by authViewModelApi.authState.collectAsState()
+    var showSaveSessionDialog by remember { mutableStateOf(false) }
+
+    val savedToken = when (authState) {
+        is AuthState.Success -> (authState as AuthState.Success).token
+        else -> TokenManager.getToken()
+    }
+
+    val userType: UserType = remember(authState) {
+        when (authState) {
+            is AuthState.Success -> (authState as AuthState.Success).userType
+            else -> {
+                val token = TokenManager.getToken()
+                val savedTypeStr = TokenManager.getRole()
+                if (!token.isNullOrEmpty()) {
+                    when (savedTypeStr.uppercase()) {
+                        "ADMIN" -> UserType.Admin
+                        "ORGANIZATION" -> UserType.Organization
+                        "VOLUNTEER" -> UserType.Volunteer
+                        "SUPERVISOR" -> UserType.Supervisor
+                        "LEADER" -> UserType.Leader
+                        else -> UserType.Student
+                    }
+                } else {
+                    UserType.Loading
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(authState) {
+        if (authState is AuthState.Success) {
+            if (TokenManager.getToken().isNullOrEmpty()) {
+                showSaveSessionDialog = true
+            }
+        }
+    }
+
+
+    if (showSaveSessionDialog) {
+        AlertDialog(
+            onDismissRequest = { showSaveSessionDialog = false },
+            title = { Text(text = "حفظ معلومات الحساب", fontWeight = FontWeight.Bold) },
+            text = { Text(text = "هل ترغب في حفظ بيانات تسجيل الدخول لكي تدخل تلقائياً في المرات القادمة؟") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        authViewModelApi.saveSessionManually()
+                        showSaveSessionDialog = false
+                    }
+                ) {
+                    Text("نعم، احفظ", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSaveSessionDialog = false }) {
+                    Text("ليس الآن")
+                }
+            }
+        )
+    }
 
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
-    LaunchedEffect(Unit) {
-        authViewModel.checkUserAndData()
-    }
-
-    LaunchedEffect(userType) {
-        when (userType) {
-            is UserType.Student -> {
-                val studentId = authViewModel.auth.currentUser?.uid
-                studentId?.let { id ->
-                    oppViewModel.fetchAllForStudent()
-                    stuViewModel.fetchUserApplications(id)
-                    notViewModel.fetchNotifications(id)
-                    stuViewModel.fetchCurrentStudentProfile()
-                    appViewModel.fetchStudentApplications()
+    LaunchedEffect(userType, savedToken) {
+        if (!savedToken.isNullOrEmpty()) {
+            when (userType) {
+                is UserType.Admin -> {
+                    adminViewModel.fetchPendingOrganizations()
                 }
-            }
-
-            is UserType.Organization -> {
-                val uid = authViewModel.auth.currentUser?.uid
-                uid?.let { id ->
-                    orgViewModel.checkEmailVerificationStatus()
-                    orgViewModel.fetchCurrentOrgProfile()
-                    oppViewModel.fetchOrgData(id)
-                    orgViewModel.fetchApplicationsForOrg(id)
-                    notViewModel.fetchNotifications(id)
+                is UserType.Organization -> {
+                    organizationViewModel.fetchMyOrganization()
                 }
+                is UserType.Student, is UserType.Volunteer -> {
+                    Log.d("Adsa", "HomeScreen: sadasdas")
+                    studentViewModel.fetchCurrentStudentProfile()
+                }
+                else -> {}
             }
-
-            is UserType.Admin -> {
-                // 👑 فور دخول الأدمن، يتم تفعيل الاستماع الحي للطلبات المعلقة
-                adminViewModel.fetchPendingOrganizationsForAdmin()
-            }
-            else -> {}
         }
     }
 
@@ -111,7 +162,7 @@ fun HomeScreen(
             val rootScreens = listOf(
                 Destination.Student.Home.route,
                 Destination.Student.MyTasks.route,
-                Destination.Student.Explore.route,
+                Destination.Student.AllOpp.route,
                 Destination.Student.Profile.route,
                 Destination.Organization.Dashboard.route,
                 Destination.Organization.Manage.route,
@@ -119,23 +170,19 @@ fun HomeScreen(
                 Destination.Organization.Profile.route
             )
 
-            // نمنع إظهار الـ BottomBar إذا كان الحساب أدمن أو إذا كانت المؤسسة غير موثقة بعد
-            val shouldShowBottomBar = currentRoute in rootScreens &&
-                    (userType !is UserType.Organization || isEmailVerified) &&
-                    (userType !is UserType.Admin)
+            val shouldShowBottomBar = currentRoute in rootScreens && (userType !is UserType.Admin)
 
             if (shouldShowBottomBar) {
                 when (userType) {
-                    is UserType.Student -> {
+                    is UserType.Student, is UserType.Volunteer -> {
                         val studentScreens = listOf(
                             Destination.Student.Home,
                             Destination.Student.MyTasks,
-                            Destination.Student.Explore,
+                            Destination.Student.AllOpp,
                             Destination.Student.Profile
                         )
                         AppBottomNavigation(currentRoute, navController, studentScreens)
                     }
-
                     is UserType.Organization -> {
                         val orgScreens = listOf(
                             Destination.Organization.Dashboard,
@@ -155,80 +202,58 @@ fun HomeScreen(
                 .padding(paddingValues)
                 .fillMaxSize()
         ) {
-            // 🛡️ فحص دفاعي استباقي: نتحقق برمجياً إذا كان الحساب المسجل حالياً هو حساب الأدمن لعزله تماماً عن حالات الخطأ الفرعية
+            if (!isOnline) {
+                Surface(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "لا يوجد اتصال بالإنترنت. يرجى التحقق من الشبكة.",
+                        color = MaterialTheme.colorScheme.onErrorContainer,
+                        modifier = Modifier.padding(8.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+
             when (userType) {
                 is UserType.Loading -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            CircularProgressIndicator(color = Color(0xFF042A63))
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(text = "Preparing your workspace...", color = Color.Gray)
-                        }
+                        CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     }
                 }
-
-                // 👑 توجيه الأدمن لشاشته الخاصة فوراً وعزله عن مسارات التعليق
                 is UserType.Admin -> {
                     AdminDashboardScreen(
-                        authViewModel = authViewModel,
-                        adminViewModel = adminViewModel,
+                        authViewModelApi = authViewModelApi,
+                        adminViewModelApi = adminViewModel,
                         onLogoutSuccess = {
+                            authViewModelApi.logout()
                             rootNavController.navigate(Screen.LoginScreen.rout) {
                                 popUpTo(0) { inclusive = true }
                             }
                         }
                     )
                 }
-
-                is UserType.Organization -> {
-                    if (!isEmailVerified) {
-                        UnverifiedOrgScreen(
-                            orgViewModel = orgViewModel,
-                            onLogoutClick = {
-                                authViewModel.logout()
-                                rootNavController.navigate(Screen.LoginScreen.rout) { popUpTo(0) { inclusive = true } }
-                            }
-                        )
-                    } else {
-                        AppNavHost(
-                            navController = navController,
-                            rootNavController = rootNavController,
-                            userType = userType,
-                            authViewModel = authViewModel,
-                            oppViewModel = oppViewModel,
-                            notViewModel = notViewModel,
-                            orgViewModel = orgViewModel,
-                            stuViewModel = stuViewModel,
-                            taskViewModel = taskViewModel,
-                            appViewModel = appViewModel
-                        )
-                    }
-                }
-
-                is UserType.Student -> {
+                is UserType.Organization, is UserType.Student, is UserType.Volunteer -> {
                     AppNavHost(
-                        navController,
-                        rootNavController,
+                        navController = navController,
+                        rootNavController = rootNavController,
                         userType = userType,
-                        authViewModel = authViewModel,
-                        oppViewModel = oppViewModel,
                         notViewModel = notViewModel,
-                        orgViewModel = orgViewModel,
-                        stuViewModel = stuViewModel,
-                        taskViewModel = taskViewModel,
-                        appViewModel = appViewModel
+                        activityViewModel = activityViewModel,
+                        authViewModelApi = authViewModelApi,
+                        organizationViewModel = organizationViewModel,
+                        studentViewModel = studentViewModel,
+                        participationViewModel = participationViewModel,
+                        attendanceViewModel = attendanceViewModel,
+                        token = savedToken
                     )
                 }
-
                 is UserType.Error -> {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Failed to load data. Please check your connection.")
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Button(onClick = { authViewModel.checkUserAndData() }) {
-                                Text("Retry")
-                            }
-                        }
+                        Text(text = "Failed to load data.", color = MaterialTheme.colorScheme.error)
                     }
                 }
                 else -> {}

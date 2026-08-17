@@ -10,8 +10,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import com.google.firebase.firestore.Exclude
 data class NotificationModel(
     val notificationId: String = "",
-    val receiverId: String = "",
-    val senderId: String = "",
+    val receiverId: Int = 0,
+    val senderId: Int = 0,
     val title: String = "",
     val message: String = "",
     val timestamp: Long = System.currentTimeMillis(),

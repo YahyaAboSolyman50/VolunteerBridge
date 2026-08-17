@@ -1,10 +1,10 @@
-package com.example.volunteerbridge.viewmodel
+package com.example.volunteerbridge.viewmodelApi
 
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 
-class SplashViewModel(app:Application) : AndroidViewModel(app) {
+class SplashViewModel(app: Application) : AndroidViewModel(app) {
     private val sharedPref = app.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
 
     fun isFirstTime(): Boolean {

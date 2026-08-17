@@ -1,9 +1,6 @@
 package com.example.volunteerbridge.view.signup
 
-import android.net.Uri
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -22,47 +19,52 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.volunteerbridge.app.R
-import com.example.volunteerbridge.model.classes.Organization
-import com.example.volunteerbridge.model.classes.status.AuthState
+import com.example.volunteerbridge.data.model.request.OrganizationRequest
+import com.example.volunteerbridge.model.AuthValidator
+import com.example.volunteerbridge.model.classes.SignupErrors
 import com.example.volunteerbridge.screens.Screen
-import com.example.volunteerbridge.viewmodel.AuthViewModel
+import com.example.volunteerbridge.viewmodelApi.OrganizationViewModel
 
 @Composable
-fun SignupScreen(viewModel: AuthViewModel, navController: NavController) {
+fun SignupScreen(
+    viewModel: OrganizationViewModel,
+    navController: NavController
+) {
     OrganizationSignupScreen(viewModel, navController)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrganizationSignupScreen(
-    viewModel: AuthViewModel,
+    viewModel: OrganizationViewModel,
     navController: NavController
 ) {
     val orgName = remember { mutableStateOf("") }
     val emailOrg = remember { mutableStateOf("") }
-    val licenseNum = remember { mutableStateOf("") }
     val phoneNum = remember { mutableStateOf("") }
+    val licenseOrg = remember { mutableStateOf("") }
     val passwordOrg = remember { mutableStateOf("") }
     val confirmPasswordOrg = remember { mutableStateOf("") }
     val descriptionOrg = remember { mutableStateOf("") }
-    var expanded by remember { mutableStateOf(false) }
-    val orgTypes = listOf("Local NGO", "Governmental", "International")
-    var selectedType by remember { mutableStateOf(orgTypes[0]) }
+    val addressOrg = remember { mutableStateOf("") }
 
-    val authState by viewModel.authState.collectAsState()
-    val errors by viewModel.errors.collectAsState()
+    var expanded by remember { mutableStateOf(false) }
+
+    // 1. القائمة المعروضة في الواجهة للمستخدم
+    val orgDisplayTypes = listOf("Local NGO", "Governmental", "International")
+    var selectedType by remember { mutableStateOf(orgDisplayTypes[0]) }
+
+    val categoryMapping = mapOf(
+        "Local NGO" to "ngo",
+        "Governmental" to "government",
+        "International" to "international"
+    )
+
+    val isLoading by viewModel.isLoading
+    var errors by remember { mutableStateOf(SignupErrors()) }
+
     val context = LocalContext.current
     val colorScheme = MaterialTheme.colorScheme
-
-    LaunchedEffect(authState) {
-        if (authState is AuthState.Success) {
-            Toast.makeText(context, "Account Created Successfully", Toast.LENGTH_SHORT).show()
-            viewModel.resetAuthState()
-            navController.navigate(Screen.LoginScreen.rout) {
-                popUpTo(Screen.SignupScreen.rout) { inclusive = true }
-            }
-        }
-    }
 
     Box(
         modifier = Modifier
@@ -94,7 +96,7 @@ fun OrganizationSignupScreen(
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // الحقول النصية (استخدام نفس تصميم صفحة اللوجن)
+            // حقل اسم المؤسسة
             SignupInputField(
                 label = "Organization Name",
                 value = orgName.value,
@@ -105,6 +107,7 @@ fun OrganizationSignupScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // حقل البريد الإلكتروني
             SignupInputField(
                 label = "Email Address",
                 value = emailOrg.value,
@@ -115,14 +118,15 @@ fun OrganizationSignupScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // العنوان ورقم الهاتف في صف واحد
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Box(modifier = Modifier.weight(1f)) {
                     SignupInputField(
-                        label = "License Number",
-                        value = licenseNum.value,
-                        onValueChange = { licenseNum.value = it },
-                        placeholder = "123-ABC",
-                        isError = errors.licenseError != null
+                        label = "Address",
+                        value = addressOrg.value,
+                        onValueChange = { addressOrg.value = it },
+                        placeholder = "City, Country",
+                        isError = false
                     )
                 }
                 Box(modifier = Modifier.weight(1f)) {
@@ -138,7 +142,18 @@ fun OrganizationSignupScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // نوع المنظمة (Dropdown)
+            // حقل رقم الترخيص
+            SignupInputField(
+                label = "License Number",
+                value = licenseOrg.value,
+                onValueChange = { licenseOrg.value = it },
+                placeholder = "Lic-XXXXXX",
+                isError = false
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // نوع المنظمة (Dropdown لـ Category)
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = "Organization Type",
@@ -171,7 +186,7 @@ fun OrganizationSignupScreen(
                         onDismissRequest = { expanded = false },
                         modifier = Modifier.background(colorScheme.surface)
                     ) {
-                        orgTypes.forEach { type ->
+                        orgDisplayTypes.forEach { type ->
                             DropdownMenuItem(
                                 text = { Text(type, color = colorScheme.onSurface) },
                                 onClick = {
@@ -186,6 +201,7 @@ fun OrganizationSignupScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // حقل كلمة المرور
             SignupInputField(
                 label = "Password",
                 value = passwordOrg.value,
@@ -197,6 +213,7 @@ fun OrganizationSignupScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // حقل تأكيد كلمة المرور
             SignupInputField(
                 label = "Confirm Password",
                 value = confirmPasswordOrg.value,
@@ -208,6 +225,7 @@ fun OrganizationSignupScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // حقل الوصف
             SignupInputField(
                 label = "Description",
                 value = descriptionOrg.value,
@@ -216,21 +234,48 @@ fun OrganizationSignupScreen(
                 singleLine = false
             )
 
-
-
             Spacer(modifier = Modifier.height(40.dp))
 
-            // الزر الرئيسي
+            // الزر الرئيسي لإرسال البيانات
             Button(
                 onClick = {
-                    viewModel.registerOrganization(
-                        Organization(
-                            nameOrg = orgName.value, emailOrg = emailOrg.value,
-                            passwordOrg = passwordOrg.value, license = licenseNum.value,
-                            phone = phoneNum.value, orgType = selectedType,
-                            description = descriptionOrg.value,
-                        ), confirmPasswordOrg.value
+                    // تحويل النص المختار في الواجهة إلى القيمة المقبولة في السيرفر لـ category
+                    val apiCategory = categoryMapping[selectedType] ?: "ngo"
+
+                    // إنشاء الكائن المطابق تماماً لـ OrganizationRegister في الـ Swagger
+                    val request = OrganizationRequest(
+                        name = orgName.value,
+                        email = emailOrg.value,
+                        password = passwordOrg.value,
+                        license = licenseOrg.value,
+                        phone = phoneNum.value,
+                        category = apiCategory,
+                        address = addressOrg.value,
+                        description = descriptionOrg.value
                     )
+
+                    // 1. التحقق محلياً
+                    val validationResult = AuthValidator.validateSignupErrors(request, confirmPasswordOrg.value)
+                    errors = validationResult
+
+                    if (!validationResult.hasError()) {
+                        // 2. إرسال الطلب عبر الـ ViewModel
+                        viewModel.registerOrganization(
+                            org = request,
+                            confPassword = confirmPasswordOrg.value
+                        ) { success, message ->
+                            if (success) {
+                                Toast.makeText(context, "Account Created Successfully!", Toast.LENGTH_SHORT).show()
+                                navController.navigate(Screen.LoginScreen.rout) {
+                                    popUpTo(Screen.SignupScreen.rout) { inclusive = true }
+                                }
+                            } else {
+                                Toast.makeText(context, message ?: "Registration Failed", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                    } else {
+                        Toast.makeText(context, "Please correct the errors in the form", Toast.LENGTH_SHORT).show()
+                    }
                 },
                 modifier = Modifier.fillMaxWidth().height(58.dp),
                 shape = RoundedCornerShape(16.dp),
@@ -238,9 +283,9 @@ fun OrganizationSignupScreen(
                     containerColor = colorScheme.primary,
                     contentColor = colorScheme.onPrimary
                 ),
-                enabled = authState !is AuthState.Loading
+                enabled = !isLoading
             ) {
-                if (authState is AuthState.Loading) {
+                if (isLoading) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp), color = colorScheme.onPrimary)
                 } else {
                     Text("Submit Request", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
@@ -286,12 +331,10 @@ fun SignupInputField(
             placeholder = { Text(placeholder, color = colorScheme.onSurface.copy(alpha = 0.4f)) },
             singleLine = singleLine,
             isError = isError,
-            visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,            trailingIcon = {
+            visualTransformation = if (isPassword && !passwordVisible) PasswordVisualTransformation() else VisualTransformation.None,
+            trailingIcon = {
                 if (isPassword) {
-                    val image = if (passwordVisible)
-                        R.drawable.view
-                    else R.drawable.close_eye
-
+                    val image = if (passwordVisible) R.drawable.view else R.drawable.close_eye
                     val description = if (passwordVisible) "Hide password" else "Show password"
 
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {

@@ -20,7 +20,7 @@ sealed class Destination(
     sealed class Student(route: String, icon: ImageVector, label: String) :
         Destination(route, icon, label) {
         object Home : Student("stu_home", Icons.Default.Home, "Home")
-        object Explore : Student("stu_explore", Icons.Default.Search, "Explore")
+        object AllOpp : Student("all_opportunities_screen", Icons.Default.Notifications, "AllOpp")
         object MyTasks : Student("stu_tasks", Icons.Default.DateRange, "My Tasks")
         object Profile : Student("stu_profile", Icons.Default.Person, "Profile")
     }
@@ -36,7 +36,8 @@ sealed class Destination(
 
 sealed class SubClasses(val route: String) {
     sealed class SubClassesStu(route: String) : SubClasses(route) {
-        object OppDetail : SubClasses("Opp_Detail")
+        object OppDetail : SubClasses("opp_detail")
+        object Notification : SubClassesStu("notification")
     }
     sealed class SubClassesOrg(route: String) : SubClasses(route) {
         object Notification : SubClassesOrg("org_not")

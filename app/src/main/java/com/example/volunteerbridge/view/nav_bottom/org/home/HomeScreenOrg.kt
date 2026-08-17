@@ -4,7 +4,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -13,52 +12,100 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.volunteerbridge.model.classes.OpportunityModel
-import com.example.volunteerbridge.view.functions.formatTimeAgo
-import com.example.volunteerbridge.viewmodel.AuthViewModel
-import com.example.volunteerbridge.viewmodel.NotViewModel
-import com.example.volunteerbridge.viewmodel.OpportunityViewModel
-import com.example.volunteerbridge.viewmodel.OrgViewModel
+import com.example.volunteerbridge.app.R
+import com.example.volunteerbridge.data.model.TokenManager
+import com.example.volunteerbridge.data.model.response.ActivityResponse
+import com.example.volunteerbridge.view.components.formatTimeAgo
+import com.example.volunteerbridge.viewmodelApi.NotViewModel
+import com.example.volunteerbridge.viewmodelApi.ActivityViewModel
+import com.example.volunteerbridge.viewmodelApi.AuthViewModelApi
+import com.example.volunteerbridge.viewmodelApi.OrganizationViewModel
 
 @Composable
 fun OrganizationHomeContent(
-    orgViewModel: OrgViewModel,
-    oppViewModel: OpportunityViewModel,
+    organizationViewModel: OrganizationViewModel,
+    activityViewModel: ActivityViewModel,
+    authViewModelApi: AuthViewModelApi,
     notViewModel: NotViewModel,
     onNotificationClick: () -> Unit,
     onTopPreClick: (String) -> Unit
 ) {
-    val orgModel by orgViewModel.currentOrgData
-    val oppList by oppViewModel.orgOpp
-    val isVerified = orgModel?.verified ?: false
-    val hasUnread by notViewModel.hasNewNotifications
-    val bestOpp = oppList.maxByOrNull { it.applicantsCount }
+    val token = remember { TokenManager.getToken() ?: "" }
+    val currentOrg by organizationViewModel.currentOrganization
 
+    val myActivities by activityViewModel.myActivities.collectAsState()
+
+    val defaultOrgName = stringResource(R.string.organization_default_name)
+    val orgName = currentOrg?.name ?: defaultOrgName
+    val isVerified = currentOrg?.verified ?: true
+
+    val hasUnread by notViewModel.hasNewNotifications
+    val notificationsList by notViewModel.notifications
+
+    val bestOpp = myActivities.maxByOrNull { it.id ?: 0 }
+    LaunchedEffect(Unit) {
+        organizationViewModel.fetchMyOrganization()
+        activityViewModel.loadMyOrganizationActivities()
+
+    }
+
+    LaunchedEffect(currentOrg?.id) {
+        currentOrg?.id?.let { orgId ->
+//            activityViewModel.loadMyOrganizationActivities()
+            notViewModel.fetchNotifications(orgId)
+        }
+    }
+
+    OrganizationHomeDesign(
+        orgName = orgName,
+        isVerified = isVerified,
+        hasUnreadNotifications = hasUnread,
+        myActivities = myActivities,
+        bestOpp = bestOpp,
+        notifications = notificationsList,
+        onNotificationClick = onNotificationClick,
+        onTopPreClick = onTopPreClick
+    )
+}
+
+@Composable
+fun OrganizationHomeDesign(
+    orgName: String,
+    isVerified: Boolean,
+    hasUnreadNotifications: Boolean,
+    myActivities: List<ActivityResponse>,
+    bestOpp: ActivityResponse?,
+    notifications: List<com.example.volunteerbridge.model.classes.NotificationModel>,
+    onNotificationClick: () -> Unit,
+    onTopPreClick: (String) -> Unit
+) {
     val colorScheme = MaterialTheme.colorScheme
-    val isDark = isSystemInDarkTheme()
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(colorScheme.background), // استخدام الخلفية الموحدة للتطبيق
+            .background(colorScheme.background),
         contentPadding = PaddingValues(bottom = 24.dp)
     ) {
         item {
             HeaderSection(
-                name = orgModel?.nameOrg ?: "Organization",
+                name = orgName,
                 isVerified = isVerified,
                 accentColor = colorScheme.primary,
-                hasNotifications = hasUnread,
+                hasNotifications = hasUnreadNotifications,
                 onNotifyClick = onNotificationClick
             )
         }
@@ -69,22 +116,21 @@ fun OrganizationHomeContent(
                     .padding(horizontal = 20.dp)
                     .fillMaxWidth()
             ) {
-                // الإحصائيات (Stat Boxes)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     StatBox(
                         modifier = Modifier.weight(1f),
-                        title = "Active Ops",
-                        value = "${oppList.size}",
+                        title = stringResource(R.string.stat_active_ops),
+                        value = "${myActivities.size}",
                         icon = Icons.Default.DateRange,
                         accentColor = colorScheme.primary
                     )
                     StatBox(
                         modifier = Modifier.weight(1f),
-                        title = "Applicants",
-                        value = "${oppList.sumOf { it.applicantsCount }}",
+                        title = stringResource(R.string.stat_applicants),
+                        value = "${myActivities.sumOf { it.applicantsCount ?: 0L }}",
                         icon = Icons.Default.AccountBox,
                         accentColor = colorScheme.secondary
                     )
@@ -93,18 +139,17 @@ fun OrganizationHomeContent(
                 Spacer(modifier = Modifier.height(32.dp))
 
                 Text(
-                    "Top Performing",
+                    text = stringResource(R.string.top_performing_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = colorScheme.onBackground // يتغير حسب الثيم
+                    color = colorScheme.onBackground
                 )
                 Spacer(modifier = Modifier.height(12.dp))
-                TopPerformingOpp(
-                    bestOpp,
-                    colorScheme.primary,
-                    onTopPreClick = {
-                        bestOpp?.id?.let { id -> onTopPreClick(id) }
-                    }
+
+                TopPerformingOppApi(
+                    opp = bestOpp,
+                    accentColor = colorScheme.primary,
+                    onTopPreClick = { id -> onTopPreClick(id) }
                 )
 
                 Spacer(modifier = Modifier.height(32.dp))
@@ -115,17 +160,19 @@ fun OrganizationHomeContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        "Recent Activity",
+                        text = stringResource(R.string.recent_activity_title),
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = colorScheme.onBackground
                     )
                     TextButton(onClick = { onNotificationClick() }) {
-                        Text("View All", color = colorScheme.primary, fontSize = 14.sp)
+                        Text(stringResource(R.string.view_all), color = colorScheme.primary, fontSize = 14.sp)
                     }
                 }
 
-                RecentActivityList(notViewModel)
+                Spacer(modifier = Modifier.height(8.dp))
+
+                RecentActivityList(notifications = notifications)
             }
         }
     }
@@ -166,7 +213,7 @@ fun HeaderSection(
 
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                "Hello, $name 👋",
+                text = stringResource(R.string.hello_user_greeting, name),
                 color = onBg,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.ExtraBold
@@ -174,7 +221,6 @@ fun HeaderSection(
             Spacer(modifier = Modifier.height(6.dp))
 
             Surface(
-                // في حالة التوثيق نستخدم اللون الأساسي، وإلا نستخدم لون خطأ (Error)
                 color = if (isVerified) accentColor.copy(alpha = 0.2f) else MaterialTheme.colorScheme.errorContainer,
                 shape = RoundedCornerShape(50.dp),
             ) {
@@ -183,14 +229,14 @@ fun HeaderSection(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        if (isVerified) Icons.Default.CheckCircle else Icons.Default.Info,
+                        imageVector = if (isVerified) Icons.Default.CheckCircle else Icons.Default.Info,
                         contentDescription = null,
                         tint = if (isVerified) accentColor else MaterialTheme.colorScheme.error,
                         modifier = Modifier.size(12.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = if (isVerified) "Verified Organization" else "Pending Verification",
+                        text = if (isVerified) stringResource(R.string.status_verified_org) else stringResource(R.string.status_pending_verification),
                         color = if (isVerified) accentColor else MaterialTheme.colorScheme.error,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold
@@ -234,9 +280,7 @@ fun StatBox(
     Card(
         modifier = modifier,
         shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = colorScheme.surface // CardBgDark أو CardBgLight
-        ),
+        colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
         border = BorderStroke(1.dp, accentColor.copy(alpha = 0.15f))
     ) {
         Column(
@@ -266,14 +310,34 @@ fun StatBox(
 }
 
 @Composable
-fun TopPerformingOpp(opp: OpportunityModel?, accentColor: Color, onTopPreClick: (String) -> Unit) {
-    if (opp == null) return
+fun TopPerformingOppApi(
+    opp: ActivityResponse?,
+    accentColor: Color,
+    onTopPreClick: (String) -> Unit
+) {
+    if (opp == null) {
+        Card(
+            modifier = Modifier.fillMaxWidth(),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        ) {
+            Text(
+                text = stringResource(R.string.no_opportunities_posted),
+                modifier = Modifier.padding(20.dp),
+                color = Color.Gray,
+                fontSize = 14.sp
+            )
+        }
+        return
+    }
+
     val colorScheme = MaterialTheme.colorScheme
+    val activeStatusText = stringResource(R.string.status_active_label)
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onTopPreClick(opp.id) },
+            .clickable { onTopPreClick(opp.id.toString()) },
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
         border = BorderStroke(1.dp, accentColor.copy(alpha = 0.1f))
@@ -293,13 +357,13 @@ fun TopPerformingOpp(opp: OpportunityModel?, accentColor: Color, onTopPreClick: 
             Spacer(Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    opp.title,
+                    text = opp.title.toString(),
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     color = colorScheme.onSurface
                 )
                 Text(
-                    "${opp.applicantsCount} volunteers applied",
+                    text = "Status: ${opp.status ?: activeStatusText}",
                     fontSize = 13.sp,
                     color = colorScheme.onSurface.copy(alpha = 0.6f)
                 )
@@ -309,6 +373,33 @@ fun TopPerformingOpp(opp: OpportunityModel?, accentColor: Color, onTopPreClick: 
                 contentDescription = null,
                 tint = accentColor.copy(alpha = 0.5f)
             )
+        }
+    }
+}
+
+@Composable
+fun RecentActivityList(notifications: List<com.example.volunteerbridge.model.classes.NotificationModel>) {
+    val topRecentNotifications = notifications.take(3)
+
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        if (topRecentNotifications.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(stringResource(R.string.no_recent_activity), color = Color.Gray, fontSize = 14.sp)
+            }
+        } else {
+            topRecentNotifications.forEach { notification ->
+                ActivityItem(
+                    title = "${notification.title}: ${notification.message}",
+                    time = formatTimeAgo(notification.timestamp),
+                    icon = notification.getIcon(),
+                    iconColor = notification.getColor()
+                )
+            }
         }
     }
 }
@@ -335,44 +426,17 @@ fun ActivityItem(title: String, time: String, icon: ImageVector, iconColor: Colo
         Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(
-                title,
+                text = title,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
-                color = colorScheme.onSurface
+                color = colorScheme.onSurface,
+                maxLines = 2
             )
             Text(
-                time,
+                text = time,
                 style = MaterialTheme.typography.labelSmall,
                 color = colorScheme.onSurface.copy(alpha = 0.5f)
             )
         }
     }
 }
-
-@Composable
-fun RecentActivityList(notViewModel: NotViewModel) {
-    val activities by notViewModel.notifications
-    val recentActivities = activities.take(5)
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        if (activities.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("No recent activity yet", color = Color.Gray, fontSize = 14.sp)
-            }
-        } else {
-            recentActivities.forEach { notification ->
-                ActivityItem(
-                    title = notification.title + ": " + notification.message,
-                    time = formatTimeAgo(notification.timestamp),
-                    icon = notification.getIcon(),
-                    iconColor = notification.getColor()
-                )
-            }
-        }
-    }
-}
-

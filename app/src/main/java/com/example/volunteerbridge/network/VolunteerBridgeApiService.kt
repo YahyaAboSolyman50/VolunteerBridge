@@ -1,5 +1,6 @@
 package com.example.volunteerbridge.network
 
+import androidx.browser.trusted.Token
 import com.example.volunteerbridge.data.model.request.*
 import com.example.volunteerbridge.data.model.response.*
 import retrofit2.Response
@@ -8,125 +9,154 @@ import retrofit2.http.*
 interface VolunteerBridgeApiService {
 
     // ==========================================
-    // 📋 Activities Endpoints (14 Endpoints)
+    // 📋 Activities Endpoints
     // ==========================================
 
     @GET("activities/")
-    suspend fun getActivitiesList(): Response<List<ActivityResponse>>
+    suspend fun getActivities(): Response<List<ActivityResponse>>
 
     @GET("activities/attendance/")
-    suspend fun getActivitiesAttendanceList(
-        @Header("Authorization") token: String
-    ): Response<List<VolunteerAttendanceResponse>>
+    suspend fun getActivitiesAttendanceList(): Response<List<VolunteerAttendanceResponse>>
 
     @POST("activities/attendance/")
     suspend fun createActivitiesAttendance(
-        @Header("Authorization") token: String,
         @Body attendance: VolunteerAttendanceRequest
     ): Response<VolunteerAttendanceResponse>
 
     @POST("activities/create/")
     suspend fun createActivity(
-        @Header("Authorization") token: String,
         @Body activity: ActivityRequest
     ): Response<ActivityResponse>
 
     @GET("activities/daily-logs/")
-    suspend fun getDailyLogsList(
-        @Header("Authorization") token: String
-    ): Response<List<DailyActivityLogResponse>>
+    suspend fun getDailyLogsList(): Response<List<DailyActivityLogResponse>>
 
     @POST("activities/daily-logs/")
     suspend fun createDailyLog(
-        @Header("Authorization") token: String,
         @Body log: DailyActivityLogRequest
     ): Response<DailyActivityLogResponse>
 
     @GET("activities/daily-logs/report/")
-    suspend fun getDailyLogsReport(
-        @Header("Authorization") token: String
-    ): Response<GenericReportResponse>
+    suspend fun getDailyLogsReport(): Response<GenericReportResponse>
 
     @GET("activities/daily-logs/statistics/")
-    suspend fun getDailyLogsStatistics(
-        @Header("Authorization") token: String
-    ): Response<Map<String, Any>>
+    suspend fun getDailyLogsStatistics(): Response<Map<String, Any>>
 
     @GET("activities/dashboard/")
-    suspend fun getActivitiesDashboard(
-        @Header("Authorization") token: String
-    ): Response<DashboardData>
+    suspend fun getActivitiesDashboard(): Response<List<ActivityResponse>>
 
     @GET("activities/my-participations/")
-    suspend fun getMyParticipations(
-        @Header("Authorization") token: String
-    ): Response<List<ParticipationResponse>>
+    suspend fun getMyParticipations(): Response<List<ParticipationResponse>>
 
     @GET("activities/my-total-hours/")
-    suspend fun getMyTotalHours(
-        @Header("Authorization") token: String
-    ): Response<TotalHoursResponse>
+    suspend fun getMyTotalHours(): Response<TotalHoursResponse>
 
     @GET("activities/organizations-report/")
-    suspend fun getOrganizationsReport(
-        @Header("Authorization") token: String
-    ): Response<GenericReportResponse>
+    suspend fun getOrganizationsReport(): Response<GenericReportResponse>
 
     @GET("activities/volunteer-hours-report/")
-    suspend fun getVolunteerHoursReport(
-        @Header("Authorization") token: String
-    ): Response<GenericReportResponse>
+    suspend fun getVolunteerHoursReport(): Response<GenericReportResponse>
+
+    @GET("activities/{id}/")
+    suspend fun getActivityById(
+        @Path("id") activityId: Int
+    ): Response<ActivityResponse>
 
     @POST("activities/{id}/join/")
     suspend fun joinActivity(
-        @Header("Authorization") token: String,
         @Path("id") activityId: Int
     ): Response<Unit>
 
+    @GET("activities/{id}/applications/")
+    suspend fun getActivityApplications(
+        @Path("id") activityId: Int
+    ): Response<List<ParticipationResponse>>
+
+    @GET("activities/my-applications/")
+    suspend fun getMyApplications(): Response<List<ParticipationResponse>>
+
+    @PUT("activities/{id}/update/")
+    suspend fun updateActivity(
+        @Path("id") activityId: Int,
+        @Body activity: ActivityRequest
+    ): Response<ActivityResponse>
+
+    @PATCH("activities/{id}/update/")
+    suspend fun partialUpdateActivity(
+        @Path("id") activityId: Int,
+        @Body request: ActivityRequest
+    ): Response<ActivityResponse>
+
+    @POST("activities/participations/{id}/approve/")
+    suspend fun approveParticipation(
+        @Path("id") participationId: Int
+    ): Response<Unit>
+
+    @POST("activities/participations/{id}/reject/")
+    suspend fun rejectParticipation(
+        @Path("id") participationId: Int
+    ): Response<Unit>
+
+    @POST("activities/participations/{id}/cancel/")
+    suspend fun cancelParticipation(
+        @Path("id") participationId: Int
+    ): Response<Unit>
+
+    @POST("activities/participations/{id}/attendance/")
+    suspend fun recordParticipationAttendance(
+        @Path("id") participationId: Int
+    ): Response<Unit>
+
+    @POST("activities/participations/{id}/complete/")
+    suspend fun completeParticipation(
+        @Path("id") participationId: Int
+    ): Response<okhttp3.ResponseBody>
+
     // ==========================================
-    // 🔑 Auth Endpoints (2 Endpoints)
+    // 🔑 Auth Endpoints
     // ==========================================
 
     @POST("auth/login/")
     suspend fun login(
         @Body credentials: CustomTokenObtainPairRequest
-    ): Response<TokenResponse>
+    ): Response<LoginResponse>
 
     @POST("auth/refresh/")
     suspend fun refreshAccessToken(
         @Body refreshBody: TokenRefreshRequest
     ): Response<TokenResponse>
 
+    @GET("auth/profile/")
+    suspend fun getUserProfile(): Response<UserProfileResponse>
+
     // ==========================================
-    // 🏢 Organizations Endpoints (الروابط الجديدة والمحدثة)
+    // 🏢 Organizations Endpoints
     // ==========================================
+    @POST("organizations/login/")
+    suspend fun loginOrganization(
+        @Body credentials: OrgLoginRequest
+    ): Response<LoginResponse>
+
+    @POST("organizations/")
+    suspend fun registerOrganization(
+        @Body organization: OrganizationRequest
+    ): Response<OrganizationResponse>
 
     @GET("organizations/")
     suspend fun getOrganizationsList(): Response<List<OrganizationResponse>>
 
-    @POST("organizations/")
-    suspend fun createOrganization(
-        @Header("Authorization") token: String,
-        @Body organization: OrganizationRequest
+    @GET("activities/my-activities/")
+    suspend fun getActivitiesMyOrg(): Response<List<ActivityResponse>>
+
+    @GET("organizations/profile/")
+    suspend fun getOrganizationProfile(
     ): Response<OrganizationResponse>
 
-    // 🆕 تسجيل دخول مؤسسة
-    @POST("organizations/login/")
-    suspend fun organizationLogin(
-        @Body credentials: CustomTokenObtainPairRequest // أو الموديل الخاص بتسجيل دخولهم
-    ): Response<TokenResponse>
+    @GET("organizations/my-organization/")
+    suspend fun getMyOrganization(): Response<OrganizationResponse>
 
-    // 🆕 جلب المؤسسات قيد الانتظار للموافقة عليها (Admin)
     @GET("organizations/pending/")
-    suspend fun getPendingOrganizations(
-        @Header("Authorization") token: String
-    ): Response<List<OrganizationResponse>>
-
-    // 🆕 إنشاء حساب مؤسسة جديد (طلب تسجيل)
-    @POST("organizations/register/")
-    suspend fun registerOrganization(
-        @Body organization: OrganizationRequest
-    ): Response<OrganizationResponse>
+    suspend fun getPendingOrganizations(): Response<List<OrganizationResponse>>
 
     @GET("organizations/{id}/")
     suspend fun getOrganizationById(
@@ -135,44 +165,28 @@ interface VolunteerBridgeApiService {
 
     @PUT("organizations/{id}/")
     suspend fun updateOrganization(
-        @Header("Authorization") token: String,
         @Path("id") id: Int,
         @Body organization: OrganizationRequest
     ): Response<OrganizationResponse>
 
     @PATCH("organizations/{id}/")
     suspend fun partialUpdateOrganization(
-        @Header("Authorization") token: String,
         @Path("id") id: Int,
-        @Body partialData: Map<String, Any?>
+        @Body organization: OrganizationRequest
     ): Response<OrganizationResponse>
 
     @DELETE("organizations/{id}/")
     suspend fun deleteOrganization(
-        @Header("Authorization") token: String,
         @Path("id") id: Int
     ): Response<Unit>
 
-    // 🆕 قبول طلب تسجيل المؤسسة من قبل الأدمن
     @POST("organizations/{id}/approve/")
     suspend fun approveOrganization(
-        @Header("Authorization") token: String,
         @Path("id") id: Int
     ): Response<Unit>
 
-    // 🆕 رفض طلب تسجيل المؤسسة من قبل الأدمن
     @POST("organizations/{id}/reject/")
     suspend fun rejectOrganization(
-        @Header("Authorization") token: String,
         @Path("id") id: Int
     ): Response<Unit>
-
-    // ==========================================
-    // 👤 Profile Endpoint
-    // ==========================================
-
-    @GET("auth/profile/")
-    suspend fun getUserProfile(
-        @Header("Authorization") token: String
-    ): Response<UserProfileResponse>
 }

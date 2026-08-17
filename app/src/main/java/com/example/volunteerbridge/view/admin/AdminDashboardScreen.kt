@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.*
@@ -19,43 +20,42 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.volunteerbridge.model.classes.Organization
+import com.example.volunteerbridge.data.model.response.OrganizationResponse
 import com.example.volunteerbridge.model.classes.status.UiState
-import com.example.volunteerbridge.viewmodel.AuthViewModel
-import com.example.volunteerbridge.viewmodel.AdminViewModel
+import com.example.volunteerbridge.viewmodelApi.AuthViewModelApi
+import com.example.volunteerbridge.viewmodelApi.AdminViewModelApi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminDashboardScreen(
-    authViewModel: AuthViewModel,
-    adminViewModel: AdminViewModel,
+    authViewModelApi: AuthViewModelApi,
+    adminViewModelApi: AdminViewModelApi,
     onLogoutSuccess: () -> Unit
 ) {
     val context = LocalContext.current
 
-    // 🔍 مراقبة قائمة البيانات وقائمة الـ UiState من الـ ViewModel
-    val pendingOrgs by adminViewModel.pendingOrganizations
-    val adminUiState by adminViewModel.adminUiState.collectAsState()
+    // 🔍 مراقبة البيانات والـ UiState من AdminViewModelApi
+    val pendingOrgs by adminViewModelApi.pendingOrganizations
+    val adminUiState by adminViewModelApi.adminUiState.collectAsState()
 
-    // تحديد إذا كانت هناك عملية اعتماد قيد التحميل حالياً لتجميد الأزرار
+    // تحديد حالة التحميل لتجميد الأزرار لمنع التكرار
     val isOperationLoading = adminUiState is UiState.Loading
 
-    // 🔄 بدء جلب البيانات فور بناء الشاشة
+    // 🔄 جلب البيانات فور بناء الشاشة
     LaunchedEffect(Unit) {
-        adminViewModel.fetchPendingOrganizationsForAdmin()
+        adminViewModelApi.fetchPendingOrganizations()
     }
 
-    // ⚡ مراقبة تأثيرات الـ UiState (إظهار توست عند النجاح أو الخطأ وتصفير الحالة)
+    // ⚡ مراقبة التنبيهات من الـ API (توفير التوست وإعادة الضبط)
     LaunchedEffect(adminUiState) {
-        when (adminUiState) {
+        when (val state = adminUiState) {
             is UiState.Success -> {
-                Toast.makeText(context, "تم اعتماد وتوثيق المؤسسة بنجاح ✔️", Toast.LENGTH_SHORT).show()
-                adminViewModel.resetAdminUiState() // تصفير الحالة للعودة إلى Idle
+                Toast.makeText(context, state.data, Toast.LENGTH_SHORT).show()
+                adminViewModelApi.resetUiState()
             }
             is UiState.Error -> {
-                val errorMessage = (adminUiState as UiState.Error).message
-                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-                adminViewModel.resetAdminUiState()
+                Toast.makeText(context, state.message, Toast.LENGTH_LONG).show()
+                adminViewModelApi.resetUiState()
             }
             else -> {}
         }
@@ -68,10 +68,10 @@ fun AdminDashboardScreen(
                 actions = {
                     IconButton(
                         onClick = {
-                            authViewModel.logout()
+//                            authViewModelApi.logout()
                             onLogoutSuccess()
                         },
-                        enabled = !isOperationLoading // منع الخروج أثناء معالجة البيانات
+                        enabled = !isOperationLoading
                     ) {
                         Icon(imageVector = Icons.Default.ExitToApp, contentDescription = "خروج", tint = Color.White)
                     }
@@ -114,7 +114,10 @@ fun AdminDashboardScreen(
                             org = org,
                             isGlobalLoading = isOperationLoading,
                             onApprove = {
-                                adminViewModel.adminApproveOrganization(org.uid)
+                                adminViewModelApi.approveOrganization(org.id)
+                            },
+                            onReject = {
+                                adminViewModelApi.rejectOrganization(org.id)
                             }
                         )
                     }
@@ -126,15 +129,20 @@ fun AdminDashboardScreen(
 
 @Composable
 fun AdminOrgRequestCard(
-    org: Organization,
+    org: OrganizationResponse,
     isGlobalLoading: Boolean,
-    onApprove: () -> Unit
+    onApprove: () -> Unit,
+    onReject: () -> Unit
 ) {
-    var isThisCardLoading by remember { mutableStateOf(false) }
+    var isApproving by remember { mutableStateOf(false) }
+    var isRejecting by remember { mutableStateOf(false) }
 
-    // تصفير لودر الكرت فور انتهاء العملية العامة
-    if (!isGlobalLoading) {
-        isThisCardLoading = false
+    // إعادة ضبط اللودر المحلي للكرت فور انتهاء العملية البرمجية
+    LaunchedEffect(isGlobalLoading) {
+        if (!isGlobalLoading) {
+            isApproving = false
+            isRejecting = false
+        }
     }
 
     Card(
@@ -149,41 +157,84 @@ fun AdminOrgRequestCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(text = org.nameOrg, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF042A63))
-                SuggestionChip(
-                    onClick = {},
-                    label = { Text(org.orgType ?: "مؤسسة") },
-                    colors = SuggestionChipDefaults.suggestionChipColors(containerColor = Color(0xFFE8F0FE))
+                Text(
+                    text = org.name.ifBlank { "مؤسسة بدون اسم" },
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp,
+                    color = Color(0xFF042A63)
                 )
+                org.category?.let { type ->
+                    SuggestionChip(
+                        onClick = {},
+                        label = { Text(type) },
+                        colors = SuggestionChipDefaults.suggestionChipColors(containerColor = Color(0xFFE8F0FE))
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(4.dp))
-            Text(text = "رقم الترخيص: ${org.license}", fontSize = 13.sp, color = Color.Gray)
-            Text(text = "رقم التواصل: ${org.phone}", fontSize = 13.sp, color = Color.Gray)
+            org.license?.let {
+                if (it.isNotBlank()) Text(text = "رقم الترخيص: $it", fontSize = 13.sp, color = Color.Gray)
+            }
+            org.phone?.let {
+                if (it.isNotBlank()) Text(text = "رقم التواصل: $it", fontSize = 13.sp, color = Color.Gray)
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
-            Text(text = org.description ?: "لا يوجد وصف متوفر.", fontSize = 14.sp, color = Color.DarkGray, maxLines = 3)
+            Text(
+                text = if (!org.description.isNullOrBlank()) org.description else "لا يوجد وصف متوفر.",
+                fontSize = 14.sp,
+                color = Color.DarkGray,
+                maxLines = 3
+            )
 
             Spacer(modifier = Modifier.height(12.dp))
             HorizontalDivider(color = Color(0xFFEEEEEE))
             Spacer(modifier = Modifier.height(8.dp))
 
-            Button(
-                onClick = {
-                    isThisCardLoading = true
-                    onApprove()
-                },
+            // أزرار اتخاذ القرار (قبول / رفض)
+            Row(
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
-                shape = RoundedCornerShape(8.dp),
-                enabled = !isGlobalLoading // يعطل كافة الكروت الأخرى لمنع التعليق
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                if (isThisCardLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
-                } else {
-                    Icon(imageVector = Icons.Default.Done, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("موافقة واعتماد التوثيق فوراً", fontSize = 14.sp, fontWeight = FontWeight.Medium)
+                // زر القبول / الاعتماد
+                Button(
+                    onClick = {
+                        isApproving = true
+                        onApprove()
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)),
+                    shape = RoundedCornerShape(8.dp),
+                    enabled = !isGlobalLoading
+                ) {
+                    if (isApproving) {
+                        CircularProgressIndicator(modifier = Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
+                    } else {
+                        Icon(imageVector = Icons.Default.Done, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("قبول", fontSize = 14.sp)
+                    }
+                }
+
+                // زر الرفض
+                Button(
+                    onClick = {
+                        isRejecting = true
+                        onReject()
+                    },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFC62828)),
+                    shape = RoundedCornerShape(8.dp),
+                    enabled = !isGlobalLoading
+                ) {
+                    if (isRejecting) {
+                        CircularProgressIndicator(modifier = Modifier.size(18.dp), color = Color.White, strokeWidth = 2.dp)
+                    } else {
+                        Icon(imageVector = Icons.Default.Close, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("رفض", fontSize = 14.sp)
+                    }
                 }
             }
         }

@@ -1,352 +1,490 @@
 package com.example.volunteerbridge.view.nav_bottom.org.opps
 
 import android.app.DatePickerDialog
+import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.volunteerbridge.model.classes.OpportunityModel
-import com.example.volunteerbridge.model.classes.status.UiState
-import com.example.volunteerbridge.viewmodel.OpportunityViewModel
-import com.example.volunteerbridge.viewmodel.OrgViewModel
-import java.text.SimpleDateFormat
-import java.util.*
+import com.example.volunteerbridge.app.R
+import com.example.volunteerbridge.data.model.OpportunityCategory
+import com.example.volunteerbridge.data.model.request.ActivityRequest
+import com.example.volunteerbridge.viewmodelApi.ActivityViewModel
+import com.valentinilk.shimmer.shimmer
+import java.util.Calendar
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateOppScreen(
-    oppViewModel: OpportunityViewModel,
-    orgViewModel: OrgViewModel,
-    onSuccess: () -> Unit,
     onBackClick: () -> Unit,
+    activityViewModel: ActivityViewModel,
+    userToken: String
 ) {
-    val currentOrg by orgViewModel.currentOrgData
-    val uiState by oppViewModel.uiState.collectAsState()
     val context = LocalContext.current
+    val isCreating by activityViewModel.isCreating.collectAsState()
     val colorScheme = MaterialTheme.colorScheme
 
-    // --- الحالات الأساسية ---
     var title by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
-    var category by remember { mutableStateOf("Social Work") }
-    var location by remember { mutableStateOf("") }
-    var requiredHours by remember { mutableStateOf("") }
-    var vacancies by remember { mutableStateOf("") }
-    var startDate by remember { mutableLongStateOf(0L) }
-    var endDate by remember { mutableLongStateOf(0L) }
-    var deadline by remember { mutableLongStateOf(0L) }
 
-    // --- القوائم ---
-    var taskInput by remember { mutableStateOf("") }
-    val tasksList = remember { mutableStateListOf<String>() }
-    var requirementInput by remember { mutableStateOf("") }
-    val requirementsList = remember { mutableStateListOf<String>() }
-    var tagInput by remember { mutableStateOf("") }
-    val tagsList = remember { mutableStateListOf<String>() }
+    val defaultCategoryLabel = stringResource(R.string.select_category)
+    var selectedCategoryLabel by remember { mutableStateOf(defaultCategoryLabel) }
+    var expandedCategory by remember { mutableStateOf(false) }
 
-    var expandedCat by remember { mutableStateOf(false) }
-    val categories = listOf("Technical", "Medical", "Educational", "Administrative", "Social Work", "Other")
+    var volunteerLimit by remember { mutableStateOf("") }
+    var hours by remember { mutableStateOf("") }
+    var locationName by remember { mutableStateOf("") }
 
-    val backgroundBrush = Brush.verticalGradient(
-        colors = listOf(colorScheme.primary.copy(alpha = 0.05f), colorScheme.background)
-    )
+    // الحقول الخاصة بالتواريخ والحالة
+    var startDate by remember { mutableStateOf("2026-06-01") }
+    var endDate by remember { mutableStateOf("2026-06-10") }
+    var registrationDeadline by remember { mutableStateOf("2026-05-28") }
 
-    LaunchedEffect(uiState) {
-        if (uiState is UiState.Success) {
-            Toast.makeText(context, "Opportunity Posted!", Toast.LENGTH_SHORT).show()
-            onSuccess()
-            oppViewModel.resetState()
+    val status by remember { mutableStateOf("active") }
+
+    // دالة إظهار نافذة اختيار التاريخ (DatePickerDialog)
+    fun showDatePicker(initialDate: String, onDateSelected: (String) -> Unit) {
+        val calendar = Calendar.getInstance()
+        val parts = initialDate.split("-")
+        if (parts.size == 3) {
+            parts[0].toIntOrNull()?.let { calendar.set(Calendar.YEAR, it) }
+            parts[1].toIntOrNull()?.let { calendar.set(Calendar.MONTH, it - 1) }
+            parts[2].toIntOrNull()?.let { calendar.set(Calendar.DAY_OF_MONTH, it) }
         }
+
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                val formattedMonth = String.format("%02d", month + 1)
+                val formattedDay = String.format("%02d", dayOfMonth)
+                onDateSelected("$year-$formattedMonth-$formattedDay")
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Post New Opportunity", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        text = stringResource(R.string.create_opportunity_title),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colorScheme.onSurface
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = stringResource(R.string.back),
+                            tint = colorScheme.onSurface
+                        )
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = colorScheme.background)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = colorScheme.surface
+                )
             )
         },
         containerColor = colorScheme.background
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .background(backgroundBrush)
-        ) {
+    ) { innerPadding ->
+        if (isCreating) {
+            CreateOppScreenShimmer(modifier = Modifier.padding(innerPadding))
+        } else {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 20.dp, vertical = 10.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(20.dp)
+                    .padding(innerPadding)
+                    .background(colorScheme.background)
+                    .verticalScroll(rememberScrollState())
+                    .padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // 1. المعلومات الأساسية
+                // كارد المعلومات الأساسية
                 Card(
                     colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
-                    shape = RoundedCornerShape(24.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    elevation = CardDefaults.cardElevation(2.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    border = BorderStroke(1.dp, colorScheme.primary.copy(alpha = 0.1f))
                 ) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        CustomTextField(value = title, onValueChange = { title = it }, label = "Opportunity Title", icon = Icons.Default.Edit)
-                        CustomTextField(value = description, onValueChange = { description = it }, label = "Detailed Description", icon = Icons.Default.Info, minLines = 3)
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.basic_information),
+                            fontWeight = FontWeight.Bold,
+                            color = colorScheme.primary,
+                            fontSize = 15.sp
+                        )
 
-                        ExposedDropdownMenuBox(expanded = expandedCat, onExpandedChange = { expandedCat = !expandedCat }) {
+                        OutlinedTextField(
+                            value = title,
+                            onValueChange = { title = it },
+                            label = { Text(stringResource(R.string.opportunity_title_label)) },
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        OutlinedTextField(
+                            value = description,
+                            onValueChange = { description = it },
+                            label = { Text(stringResource(R.string.detailed_description_label)) },
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                            minLines = 3
+                        )
+
+                        Box(modifier = Modifier.fillMaxWidth()) {
                             OutlinedTextField(
-                                value = category, onValueChange = {}, readOnly = true,
-                                label = { Text("Select Category") },
-                                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedCat) },
-                                modifier = Modifier.menuAnchor().fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp)
+                                value = selectedCategoryLabel,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text(stringResource(R.string.category_label)) },
+                                shape = RoundedCornerShape(12.dp),
+                                trailingIcon = { Icon(Icons.Default.ArrowDropDown, contentDescription = null) },
+                                modifier = Modifier.fillMaxWidth()
                             )
-                            ExposedDropdownMenu(expanded = expandedCat, onDismissRequest = { expandedCat = false }) {
-                                categories.forEach { selection ->
-                                    DropdownMenuItem(text = { Text(selection) }, onClick = { category = selection; expandedCat = false })
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { expandedCategory = true }
+                            )
+                            DropdownMenu(
+                                expanded = expandedCategory,
+                                onDismissRequest = { expandedCategory = false }
+                            ) {
+                                OpportunityCategory.labels.forEach { label ->
+                                    DropdownMenuItem(
+                                        text = { Text(label) },
+                                        onClick = {
+                                            selectedCategoryLabel = label
+                                            expandedCategory = false
+                                        }
+                                    )
                                 }
                             }
                         }
                     }
                 }
 
-                // 2. الأرقام والموقع
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    CustomTextField(value = requiredHours, onValueChange = { if (it.all { c -> c.isDigit() }) requiredHours = it }, label = "Hours", modifier = Modifier.weight(1f), keyboardType = KeyboardType.Number)
-                    CustomTextField(value = vacancies, onValueChange = { if (it.all { c -> c.isDigit() }) vacancies = it }, label = "Seats", modifier = Modifier.weight(1f), keyboardType = KeyboardType.Number)
-                }
-                CustomTextField(value = location, onValueChange = { location = it }, label = "Location (e.g. Remote, Gaza)", icon = Icons.Default.LocationOn)
+                // كارد المكان والساعات والحد الأقصى
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(2.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    border = BorderStroke(1.dp, colorScheme.primary.copy(alpha = 0.1f))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.location_hours_limit_section),
+                            fontWeight = FontWeight.Bold,
+                            color = colorScheme.primary,
+                            fontSize = 15.sp
+                        )
 
-                // 3. نظام المهام (Checklist)
-                ListManagerSection(
-                    label = "Opportunity Tasks (Checklist)",
-                    inputValue = taskInput,
-                    onInputChange = { taskInput = it },
-                    list = tasksList,
-                    onAdd = { if (taskInput.isNotBlank()) { tasksList.add(taskInput); taskInput = "" } },
-                    onRemove = { tasksList.remove(it) },
-                    icon = Icons.Default.CheckCircle,
-                    accentColor = Color(0xFF4CAF50)
-                )
+                        OutlinedTextField(
+                            value = locationName,
+                            onValueChange = { locationName = it },
+                            label = { Text(stringResource(R.string.location_address_label)) },
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        )
 
-                // 4. التواريخ
-                Text("Timing & Deadlines", fontWeight = FontWeight.Bold, color = colorScheme.primary)
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        DatePickerField("Start Date", startDate, Modifier.weight(1f)) { startDate = it }
-                        DatePickerField("End Date", endDate, Modifier.weight(1f)) { endDate = it }
+                        OutlinedTextField(
+                            value = volunteerLimit,
+                            onValueChange = { volunteerLimit = it },
+                            label = { Text(stringResource(R.string.volunteer_limit_label)) },
+                            shape = RoundedCornerShape(12.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+
+                        OutlinedTextField(
+                            value = hours,
+                            onValueChange = { hours = it },
+                            label = { Text(stringResource(R.string.volunteer_hours_label)) },
+                            shape = RoundedCornerShape(12.dp),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
-                    DatePickerField("Application Deadline", deadline, Modifier.fillMaxWidth()) { deadline = it }
                 }
 
-                // 5. المتطلبات والوسوم
-                ListManagerSection(
-                    label = "Requirements",
-                    inputValue = requirementInput,
-                    onInputChange = { requirementInput = it },
-                    list = requirementsList,
-                    onAdd = { if (requirementInput.isNotBlank()) { requirementsList.add(requirementInput); requirementInput = "" } },
-                    onRemove = { requirementsList.remove(it) }
-                )
+                // كارد التواريخ والحالة (مدعوم بنافذة اختيار التاريخ DatePickerDialog)
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(2.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    border = BorderStroke(1.dp, colorScheme.primary.copy(alpha = 0.1f))
+                ) {
+                    Column(
+                        modifier = Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(14.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.dates_and_status_section),
+                            fontWeight = FontWeight.Bold,
+                            color = colorScheme.primary,
+                            fontSize = 15.sp
+                        )
 
-                ListManagerSection(
-                    label = "Tags",
-                    inputValue = tagInput,
-                    onInputChange = { tagInput = it },
-                    list = tagsList,
-                    onAdd = { if (tagInput.isNotBlank()) { tagsList.add(tagInput); tagInput = "" } },
-                    onRemove = { tagsList.remove(it) },
-                    isTag = true
-                )
+                        // حقل تاريخ البداية
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            OutlinedTextField(
+                                value = startDate,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text(stringResource(R.string.start_date_label)) },
+                                shape = RoundedCornerShape(12.dp),
+                                trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { showDatePicker(startDate) { startDate = it } }
+                            )
+                        }
 
-                // 6. زر النشر
+                        // حقل تاريخ النهاية
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            OutlinedTextField(
+                                value = endDate,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text(stringResource(R.string.end_date_label)) },
+                                shape = RoundedCornerShape(12.dp),
+                                trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { showDatePicker(endDate) { endDate = it } }
+                            )
+                        }
+
+                        // حقل الموعد النهائي للتسجيل
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            OutlinedTextField(
+                                value = registrationDeadline,
+                                onValueChange = {},
+                                readOnly = true,
+                                label = { Text(stringResource(R.string.registration_deadline_label)) },
+                                shape = RoundedCornerShape(12.dp),
+                                trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) },
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable {
+                                        showDatePicker(registrationDeadline) {
+                                            registrationDeadline = it
+                                        }
+                                    }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                val fillFieldsErrorMsg = stringResource(R.string.fill_all_fields_error)
+                val successPublishMsg = stringResource(R.string.opportunity_published_success)
+
+                // زر النشر
                 Button(
                     onClick = {
-                        val newOpp = OpportunityModel(
-                            orgId = currentOrg?.uid ?: "",
-                            orgName = currentOrg?.nameOrg ?: "",
+                        val limit = volunteerLimit.toLongOrNull()
+                        val totalHours = hours.toLongOrNull()
+                        val categoryBackendKey = OpportunityCategory.fromLabel(selectedCategoryLabel)
+                        Log.d("Asasas", "CreateOppScreen: $categoryBackendKey")
+
+                        if (title.isBlank() || description.isBlank() || locationName.isBlank() || categoryBackendKey == null) {
+                            Toast.makeText(context, fillFieldsErrorMsg, Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
+                        val request = ActivityRequest(
                             title = title,
                             description = description,
-                            category = category,
-                            location = location,
-                            requiredHours = requiredHours.toIntOrNull() ?: 0,
-                            vacancies = vacancies.toIntOrNull() ?: 0,
+                            category = categoryBackendKey,
+                            location = locationName,
                             startDate = startDate,
                             endDate = endDate,
-                            deadline = deadline,
-                            requirements = requirementsList.toList(),
-                            tags = tagsList.toList(),
-                            tasks = tasksList.toList(),
-                            status = "Active"
+                            registrationDeadline = registrationDeadline,
+                            volunteerLimit = limit,
+                            status = status,
+                            hours = totalHours
                         )
-                        oppViewModel.uploadOpportunity(newOpp)
+
+                        activityViewModel.createOpportunity(
+                            request = request,
+                            onSuccess = {
+                                Toast.makeText(context, successPublishMsg, Toast.LENGTH_SHORT).show()
+                                onBackClick()
+                            }
+                        )
                     },
-                    modifier = Modifier.fillMaxWidth().height(58.dp).padding(bottom = 10.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary),
-                    enabled = uiState !is UiState.Loading && title.isNotEmpty()
+                    enabled = !isCreating,
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(54.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary)
                 ) {
-                    if (uiState is UiState.Loading) {
-                        CircularProgressIndicator(color = colorScheme.onPrimary, modifier = Modifier.size(24.dp))
-                    } else {
-                        Text("Confirm and Post", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
-                    }
+                    Text(stringResource(R.string.publish_opportunity_button), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = colorScheme.onPrimary)
                 }
             }
         }
     }
 }
 
-// --- المكونات المساعدة النظيفة بقيت بدون تعديل لمنع أخطاء الإستدعاء ---
-
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun ListManagerSection(
-    label: String,
-    inputValue: String,
-    onInputChange: (String) -> Unit,
-    list: List<String>,
-    onAdd: () -> Unit,
-    onRemove: (String) -> Unit,
-    isTag: Boolean = false,
-    icon: ImageVector = Icons.Default.AddCircle,
-    accentColor: Color = MaterialTheme.colorScheme.primary
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(label, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(
-                value = inputValue,
-                onValueChange = onInputChange,
-                placeholder = { Text("Add...") },
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(16.dp)
-            )
-            IconButton(onClick = onAdd) {
-                Icon(icon, contentDescription = null, tint = accentColor, modifier = Modifier.size(35.dp))
-            }
-        }
-        FlowRow(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            list.forEach { item ->
-                AssistChip(
-                    onClick = { onRemove(item) },
-                    label = { Text(if (isTag) "#$item" else item) },
-                    trailingIcon = { Icon(Icons.Default.Close, null, Modifier.size(14.dp)) },
-                    shape = RoundedCornerShape(12.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun CustomTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    modifier: Modifier = Modifier,
-    icon: ImageVector? = null,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    minLines: Int = 1
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        leadingIcon = icon?.let { { Icon(it, contentDescription = null) } },
-        modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        minLines = minLines
-    )
-}
-
-@Composable
-fun DatePickerField(label: String, timestamp: Long, modifier: Modifier = Modifier, onDateSelected: (Long) -> Unit) {
-    val context = LocalContext.current
-    val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-    val displayText = if (timestamp == 0L) label else sdf.format(Date(timestamp))
-
-    OutlinedCard(
-        onClick = {
-            val cal = Calendar.getInstance()
-            DatePickerDialog(context, { _, y, m, d ->
-                cal.set(y, m, d)
-                onDateSelected(cal.timeInMillis)
-            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
-        },
-        modifier = modifier.height(56.dp),
-        shape = RoundedCornerShape(16.dp)
+fun CreateOppScreenShimmer(modifier: Modifier = Modifier) {
+    val colorScheme = MaterialTheme.colorScheme
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(colorScheme.background)
+            .padding(20.dp)
+            .shimmer(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Box(Modifier.fillMaxSize().padding(horizontal = 12.dp), contentAlignment = Alignment.CenterStart) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Default.DateRange, tint = MaterialTheme.colorScheme.primary, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text(displayText, fontSize = 14.sp)
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
-@Composable
-fun ListManagerSection(
-    label: String,
-    inputValue: String,
-    onInputChange: (String) -> Unit,
-    list: List<String>,
-    onAdd: () -> Unit,
-    onRemove: (String) -> Unit,
-    isTag: Boolean = false
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(label, fontWeight = FontWeight.SemiBold, fontSize = 14.sp)
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(
-                value = inputValue,
-                onValueChange = onInputChange,
-                placeholder = { Text("Add ${if (isTag) "tag" else "requirement"}") },
-                modifier = Modifier.weight(1f),
-                shape = RoundedCornerShape(12.dp),
-                singleLine = true
-            )
-            IconButton(onClick = onAdd) {
-                Icon(Icons.Default.AddCircle, contentDescription = null, tint = Color(0xFF042A63), modifier = Modifier.size(32.dp))
-            }
-        }
-        FlowRow(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        // شيمر الكارد الأول
+        Card(
+            colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(1.dp, colorScheme.surfaceVariant.copy(alpha = 0.2f)),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            list.forEach { item ->
-                InputChip(
-                    selected = true,
-                    onClick = { onRemove(item) },
-                    label = { Text(if (isTag) "#$item" else item) },
-                    trailingIcon = { Icon(Icons.Default.Close, null, Modifier.size(14.dp)) }
-                )
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Box(modifier = Modifier
+                    .width(120.dp)
+                    .height(16.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(4.dp)))
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(12.dp)))
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(12.dp)))
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(12.dp)))
             }
         }
+
+        // شيمر الكارد الثاني
+        Card(
+            colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(1.dp, colorScheme.surfaceVariant.copy(alpha = 0.2f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Box(modifier = Modifier
+                    .width(150.dp)
+                    .height(16.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(4.dp)))
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(12.dp)))
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(12.dp)))
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(12.dp)))
+            }
+        }
+
+        // شيمر الكارد الثالث (التواريخ والحالة)
+        Card(
+            colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
+            shape = RoundedCornerShape(20.dp),
+            border = BorderStroke(1.dp, colorScheme.surfaceVariant.copy(alpha = 0.2f)),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Box(modifier = Modifier
+                    .width(140.dp)
+                    .height(16.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(4.dp)))
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(12.dp)))
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(12.dp)))
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(12.dp)))
+                Box(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(12.dp)))
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // شيمر زر النشر
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp)
+                .background(colorScheme.surfaceVariant, RoundedCornerShape(14.dp))
+        )
     }
 }

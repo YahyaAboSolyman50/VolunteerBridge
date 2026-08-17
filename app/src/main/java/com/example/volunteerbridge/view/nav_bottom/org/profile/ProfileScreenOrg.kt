@@ -17,19 +17,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.volunteerbridge.viewmodel.AuthViewModel
-import com.example.volunteerbridge.viewmodel.OrgViewModel
+import com.example.volunteerbridge.app.R
+import com.example.volunteerbridge.viewmodelApi.OrganizationViewModel
 
 @Composable
 fun OrganizationProfileScreen(
-    orgViewModel: OrgViewModel,
+    organizationViewModel: OrganizationViewModel,
     onEditProfileClick: () -> Unit,
     onLogoutClick: () -> Unit
 ) {
-    val orgModel by orgViewModel.currentOrgData
+    val orgModel by organizationViewModel.currentOrganization
     val colorScheme = MaterialTheme.colorScheme
 
     Scaffold(
@@ -50,7 +51,7 @@ fun OrganizationProfileScreen(
             ) {
                 Icon(Icons.Default.ExitToApp, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
-                Text("Logout", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                Text(stringResource(R.string.logout_button), fontWeight = FontWeight.Bold, fontSize = 16.sp)
             }
         }
     ) { padding ->
@@ -62,8 +63,8 @@ fun OrganizationProfileScreen(
         ) {
             // 1. الجزء العلوي (Header)
             ProfileHeaderSection(
-                name = orgModel?.nameOrg ?: "Organization Name",
-                email = orgModel?.emailOrg ?: "email@example.com",
+                name = orgModel?.name ?: stringResource(R.string.default_org_name),
+                email = orgModel?.email ?: stringResource(R.string.default_email),
                 isVerified = orgModel?.verified ?: false
             )
 
@@ -74,7 +75,7 @@ fun OrganizationProfileScreen(
 
                 // عنوان القسم
                 Text(
-                    "Organization Details",
+                    text = stringResource(R.string.organization_details_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = colorScheme.onBackground
@@ -90,19 +91,31 @@ fun OrganizationProfileScreen(
                     border = BorderStroke(1.dp, colorScheme.onSurface.copy(alpha = 0.08f))
                 ) {
                     Column(modifier = Modifier.padding(20.dp)) {
-                        InfoRow(Icons.Default.List, "Org Type", orgModel?.orgType ?: "Not Specified")
+                        InfoRow(
+                            icon = Icons.Default.List,
+                            label = stringResource(R.string.org_type_label),
+                            value = orgModel?.category ?: stringResource(R.string.not_specified)
+                        )
                         HorizontalDivider(
                             modifier = Modifier.padding(vertical = 12.dp),
                             thickness = 0.5.dp,
                             color = colorScheme.onSurface.copy(alpha = 0.1f)
                         )
-                        InfoRow(Icons.Default.Phone, "Phone", orgModel?.phone ?: "No Phone")
+                        InfoRow(
+                            icon = Icons.Default.Phone,
+                            label = stringResource(R.string.phone_label),
+                            value = orgModel?.phone ?: stringResource(R.string.no_phone)
+                        )
                         HorizontalDivider(
                             modifier = Modifier.padding(vertical = 12.dp),
                             thickness = 0.5.dp,
                             color = colorScheme.onSurface.copy(alpha = 0.1f)
                         )
-                        InfoRow(Icons.Default.Lock, "License ID", orgModel?.license ?: "N/A")
+                        InfoRow(
+                            icon = Icons.Default.Lock,
+                            label = stringResource(R.string.license_id_label),
+                            value = orgModel?.license ?: stringResource(R.string.na_value)
+                        )
                     }
                 }
 
@@ -110,7 +123,7 @@ fun OrganizationProfileScreen(
 
                 // 3. قسم الوصف (About)
                 Text(
-                    "About Us",
+                    text = stringResource(R.string.about_us_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = colorScheme.onBackground
@@ -118,6 +131,7 @@ fun OrganizationProfileScreen(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                val noDescriptionText = stringResource(R.string.no_description_provided)
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     color = colorScheme.surface,
@@ -126,7 +140,7 @@ fun OrganizationProfileScreen(
                 ) {
                     Text(
                         text = if (orgModel?.description.isNullOrEmpty())
-                            "No description provided for this organization."
+                            noDescriptionText
                         else orgModel?.description!!,
                         modifier = Modifier.padding(16.dp),
                         style = MaterialTheme.typography.bodyMedium,
@@ -148,7 +162,7 @@ fun OrganizationProfileScreen(
                 ) {
                     Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("Edit Profile", color = colorScheme.primary)
+                    Text(stringResource(R.string.edit_profile_button), color = colorScheme.primary)
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -198,7 +212,7 @@ fun ProfileHeaderSection(name: String, email: String, isVerified: Boolean) {
                 ) {
                     Icon(
                         Icons.Default.CheckCircle,
-                        contentDescription = "Verified",
+                        contentDescription = stringResource(R.string.verified_content_desc),
                         tint = Color(0xFF4CAF50),
                         modifier = Modifier.padding(2.dp)
                     )

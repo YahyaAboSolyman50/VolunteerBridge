@@ -1,8 +1,9 @@
 package com.example.volunteerbridge.nav
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
@@ -14,40 +15,41 @@ import com.example.volunteerbridge.view.login.LoginScreen
 import com.example.volunteerbridge.view.onboardingScreen.OnboardingScreen
 import com.example.volunteerbridge.view.signup.SignupScreen
 import com.example.volunteerbridge.view.splash.SplashScreen
-import com.example.volunteerbridge.viewmodel.AdminViewModel
-import com.example.volunteerbridge.viewmodel.ApplicationsViewModel
-import com.example.volunteerbridge.viewmodel.AuthViewModel
-import com.example.volunteerbridge.viewmodel.NotViewModel
-import com.example.volunteerbridge.viewmodel.OpportunityViewModel
-import com.example.volunteerbridge.viewmodel.OrgViewModel
-import com.example.volunteerbridge.viewmodel.SplashViewModel
-import com.example.volunteerbridge.viewmodel.StudentViewModel
-import com.example.volunteerbridge.viewmodel.TaskViewModel
+import com.example.volunteerbridge.viewmodelApi.AuthViewModelApi
+import com.example.volunteerbridge.viewmodelApi.NotViewModel
+import com.example.volunteerbridge.viewmodelApi.SplashViewModel
+import com.example.volunteerbridge.viewmodelApi.ActivityViewModel
+import com.example.volunteerbridge.viewmodelApi.AdminViewModelApi
+import com.example.volunteerbridge.viewmodelApi.AttendanceViewModel
+import com.example.volunteerbridge.viewmodelApi.OrganizationViewModel
+import com.example.volunteerbridge.viewmodelApi.ParticipationViewModel
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun Nav(context: Context) {
     val navController = rememberNavController()
     val splashViewModel: SplashViewModel = viewModel()
-    val authViewModel: AuthViewModel = viewModel(
+    val authViewModelApi: AuthViewModelApi = viewModel(
         factory = ViewModelProvider.AndroidViewModelFactory.getInstance(context.applicationContext as android.app.Application)
     )
-    val oppViewModel: OpportunityViewModel = viewModel()
-    val notViewModel: NotViewModel = viewModel()
-    val orgViewModel: OrgViewModel = viewModel()
-    val stuViewModel: StudentViewModel = viewModel()
-    val taskViewModel: TaskViewModel = viewModel()
-    val adminViewModel: AdminViewModel = viewModel()
-    val appViewModel: ApplicationsViewModel = viewModel()
 
-    LaunchedEffect(Unit) {
-        authViewModel.checkSavedSession()
-    }
+    val notViewModel: NotViewModel = viewModel()
+    val activityViewModel: ActivityViewModel = viewModel()
+    val adminViewModel: AdminViewModelApi = viewModel()
+    val orgApiViewModel: OrganizationViewModel = viewModel()
+    val organizationViewModel: OrganizationViewModel = viewModel()
+    val studentViewModel: com.example.volunteerbridge.viewmodelApi.StudentViewModel = viewModel()
+    val participationViewModel: ParticipationViewModel = viewModel()
+    val attendanceViewModel: AttendanceViewModel = viewModel()
+
+    // تم حذف الـ LaunchedEffect الذي كان يستدعي checkSavedSession لأنها تعمل تلقائياً الآن في الـ init الخاص بالـ ViewModel
+
     NavHost(
         navController = navController,
         startDestination = Screen.SplashScreen.rout
     ) {
         composable(Screen.SplashScreen.rout) {
-            SplashScreen(navController, splashViewModel, authViewModel)
+            SplashScreen(navController, splashViewModel, authViewModelApi)
         }
         composable(Screen.OnboardingScreen.rout) {
             OnboardingScreen(onFinished = {
@@ -58,22 +60,23 @@ fun Nav(context: Context) {
             })
         }
         composable(Screen.LoginScreen.rout) {
-            LoginScreen(navController, authViewModel)
+            LoginScreen(navController, authViewModelApi)
         }
         composable(Screen.SignupScreen.rout) {
-            SignupScreen(authViewModel, navController)
+            SignupScreen(orgApiViewModel, navController)
         }
         composable(Screen.HomeScreen.rout) {
             HomeScreen(
                 navController,
-                authViewModel,
-                oppViewModel,
-                notViewModel,
-                orgViewModel,
-                stuViewModel,
-                taskViewModel,
-                adminViewModel,
-                appViewModel
+                authViewModelApi = authViewModelApi,
+                notViewModel = notViewModel,
+                activityViewModel = activityViewModel,
+                adminViewModel = adminViewModel,
+                organizationViewModel =organizationViewModel,
+                studentViewModel = studentViewModel,
+                participationViewModel=participationViewModel,
+                attendanceViewModel=attendanceViewModel
+
             )
         }
     }

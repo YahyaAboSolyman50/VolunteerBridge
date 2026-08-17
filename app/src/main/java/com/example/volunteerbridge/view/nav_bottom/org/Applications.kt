@@ -7,6 +7,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -18,31 +22,43 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.volunteerbridge.app.R
-import com.example.volunteerbridge.model.classes.ApplicationModel
-import com.example.volunteerbridge.view.functions.formatTimeAgo
-import com.example.volunteerbridge.model.classes.status.UiState
-import com.example.volunteerbridge.viewmodel.OpportunityViewModel
-import com.example.volunteerbridge.viewmodel.OrgViewModel
+import com.example.volunteerbridge.data.model.response.ParticipationResponse
+import com.example.volunteerbridge.model.classes.NotificationModel
+import com.example.volunteerbridge.view.components.formatTimeAgo
+import com.example.volunteerbridge.viewmodelApi.NotViewModel
+import com.example.volunteerbridge.viewmodelApi.OrganizationViewModel
+import com.example.volunteerbridge.viewmodelApi.ParticipationViewModel
 
 @Composable
-fun ApplicationsScreen(oppViewModel: OpportunityViewModel, orgViewModel: OrgViewModel) {
-    ApplicationsScreenDesign(oppViewModel, orgViewModel)
+fun ApplicationsScreen(
+    participationViewModel: ParticipationViewModel,
+    organizationViewModel: OrganizationViewModel,
+    notViewModel: NotViewModel
+) {
+    ApplicationsScreenDesign(participationViewModel, organizationViewModel, notViewModel)
 }
 
 @Composable
-fun ApplicationsScreenDesign(oppViewModel: OpportunityViewModel, orgViewModel: OrgViewModel) {
+fun ApplicationsScreenDesign(
+    participationViewModel: ParticipationViewModel,
+    organizationViewModel: OrganizationViewModel,
+    notViewModel: NotViewModel
+) {
     var selectedTab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("Pending", "Accepted", "Rejected")
 
-    val applications by orgViewModel.orgApplications
-    val orgUiState by orgViewModel.orgUiState.collectAsState()
-    val orgModel by orgViewModel.currentOrgData
+    val tabPending = stringResource(R.string.tab_pending)
+    val tabApproved = stringResource(R.string.tab_approved)
+    val tabCompleted = stringResource(R.string.tab_completed) // تأكد من توفير النص في strings.xml
+    val tabRejected = stringResource(R.string.tab_rejected)
+    val tabs = listOf(tabPending, tabApproved, tabCompleted, tabRejected)
+
+    val applications by participationViewModel.applications.collectAsState()
+    val orgModel by organizationViewModel.currentOrganization
+    val isLoading by participationViewModel.isLoading.collectAsState()
     val colorScheme = MaterialTheme.colorScheme
 
-    LaunchedEffect(orgModel?.uid) {
-        orgModel?.uid?.let { uid ->
-            orgViewModel.fetchApplicationsForOrg(uid)
-        }
+    LaunchedEffect(Unit) {
+        participationViewModel.fetchOrganizationApplications()
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -52,7 +68,6 @@ fun ApplicationsScreenDesign(oppViewModel: OpportunityViewModel, orgViewModel: O
                 .background(colorScheme.background),
             contentPadding = PaddingValues(bottom = 100.dp)
         ) {
-            // العنوان الفرعي وحساب الإجمالي
             item {
                 Column(
                     modifier = Modifier
@@ -73,7 +88,7 @@ fun ApplicationsScreenDesign(oppViewModel: OpportunityViewModel, orgViewModel: O
                     ) {
                         Text(
                             modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                            text = "Total Applications: ${applications.size}",
+                            text = stringResource(R.string.total_applications, applications.size),
                             color = colorScheme.primary,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
@@ -82,7 +97,6 @@ fun ApplicationsScreenDesign(oppViewModel: OpportunityViewModel, orgViewModel: O
                 }
             }
 
-            // التبويبات الفلترة (Tabs)
             item {
                 ScrollableTabRow(
                     selectedTabIndex = selectedTab,
@@ -92,7 +106,15 @@ fun ApplicationsScreenDesign(oppViewModel: OpportunityViewModel, orgViewModel: O
                     divider = {}
                 ) {
                     tabs.forEachIndexed { index, title ->
-                        val count = applications.count { it.status == title }
+                        val count = applications.count {
+                            when (index) {
+                                1 -> it.status.equals("Approved", ignoreCase = true) || it.status.equals("Accepted", ignoreCase = true)
+                                2 -> it.status.equals("Completed", ignoreCase = true)
+                                0 -> it.status.equals("Pending", ignoreCase = true)
+                                3 -> it.status.equals("Rejected", ignoreCase = true)
+                                else -> false
+                            }
+                        }
                         val isSelected = selectedTab == index
 
                         Tab(
@@ -129,10 +151,18 @@ fun ApplicationsScreenDesign(oppViewModel: OpportunityViewModel, orgViewModel: O
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            // تصفية القائمة محلياً بناءً على التبويب المحدد
-            val filteredApps = applications.filter { it.status == tabs[selectedTab] }
+            val currentTabTitle = tabs[selectedTab]
+            val filteredApps = applications.filter {
+                when (selectedTab) {
+                    1 -> it.status.equals("Approved", ignoreCase = true) || it.status.equals("Accepted", ignoreCase = true)
+                    2 -> it.status.equals("Completed", ignoreCase = true)
+                    0 -> it.status.equals("Pending", ignoreCase = true)
+                    3 -> it.status.equals("Rejected", ignoreCase = true)
+                    else -> false
+                }
+            }
 
-            if (filteredApps.isEmpty() && orgUiState !is UiState.Loading) {
+            if (filteredApps.isEmpty() && !isLoading) {
                 item {
                     Box(
                         modifier = Modifier
@@ -141,7 +171,7 @@ fun ApplicationsScreenDesign(oppViewModel: OpportunityViewModel, orgViewModel: O
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No ${tabs[selectedTab]} requests",
+                            text = stringResource(R.string.no_requests_format, currentTabTitle),
                             color = colorScheme.onSurface.copy(alpha = 0.4f),
                             style = MaterialTheme.typography.bodyMedium
                         )
@@ -153,16 +183,16 @@ fun ApplicationsScreenDesign(oppViewModel: OpportunityViewModel, orgViewModel: O
                     Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)) {
                         ApplicantRequestCard(
                             app = app,
-                            onAccept = { orgViewModel.updateApplicationStatus(app.appId, "Accepted", app.studentId, app.oppTitle) },
-                            onReject = { orgViewModel.updateApplicationStatus(app.appId, "Rejected", app.studentId, app.oppTitle) }
+                            orgId = orgModel?.id ?: 0,
+                            participationViewModel = participationViewModel,
+                            notViewModel = notViewModel
                         )
                     }
                 }
             }
         }
 
-        // ✨ التعديل الثاني: إظهار مؤشر تحميل تقدمي متناسق إذا كانت البيانات تُجلب بالخلفية لأول مرة
-        if (orgUiState is UiState.Loading && applications.isEmpty()) {
+        if (isLoading && applications.isEmpty()) {
             CircularProgressIndicator(
                 modifier = Modifier.align(Alignment.Center),
                 color = colorScheme.primary
@@ -173,95 +203,249 @@ fun ApplicationsScreenDesign(oppViewModel: OpportunityViewModel, orgViewModel: O
 
 @Composable
 fun ApplicantRequestCard(
-    app: ApplicationModel,
-    onAccept: () -> Unit,
-    onReject: () -> Unit
+    app: ParticipationResponse,
+    orgId: Int,
+    participationViewModel: ParticipationViewModel,
+    notViewModel: NotViewModel
 ) {
     val colorScheme = MaterialTheme.colorScheme
+    var actionLoading by remember { mutableStateOf(false) }
+
+    val isPending = app.status.equals("Pending", ignoreCase = true)
+    val isAccepted = app.status.equals("Accepted", ignoreCase = true) || app.status.equals("Approved", ignoreCase = true)
+    val isCompleted = app.status.equals("Completed", ignoreCase = true)
+    val isRejected = app.status.equals("Rejected", ignoreCase = true)
+
+    val containerColor = colorScheme.surface
+
+    val badgeColor = when {
+        isCompleted -> Color(0xFF2196F3) // لون أزرق للمكتمل
+        isAccepted -> Color(0xFF4CAF50)
+        isRejected -> Color(0xFFF44336)
+        else -> Color(0xFFFF9800)
+    }
 
     ElevatedCard(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.elevatedCardColors(containerColor = colorScheme.surface),
+        colors = CardDefaults.elevatedCardColors(containerColor = containerColor),
         shape = RoundedCornerShape(20.dp),
-        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = if (isPending) 2.dp else 0.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
                     modifier = Modifier
                         .size(50.dp)
-                        .background(colorScheme.primary.copy(alpha = 0.1f), CircleShape),
+                        .background(
+                            color = when {
+                                isCompleted -> Color(0xFF2196F3).copy(alpha = 0.2f)
+                                isAccepted -> Color(0xFF4CAF50).copy(alpha = 0.2f)
+                                isRejected -> colorScheme.error.copy(alpha = 0.2f)
+                                else -> colorScheme.primary.copy(alpha = 0.1f)
+                            },
+                            shape = CircleShape
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(Icons.Default.Person, contentDescription = null, tint = colorScheme.primary)
+                    Icon(
+                        imageVector = when {
+                            isCompleted -> Icons.Default.Done
+                            isAccepted -> Icons.Default.CheckCircle
+                            isRejected -> Icons.Default.Close
+                            else -> Icons.Default.Info
+                        },
+                        contentDescription = null,
+                        tint = when {
+                            isCompleted -> Color(0xFF2196F3)
+                            isAccepted -> Color(0xFF4CAF50)
+                            isRejected -> colorScheme.error
+                            else -> colorScheme.primary
+                        }
+                    )
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
+                    app.studentName?.let {
+                        Text(
+                            text = stringResource(R.string.volunteer_name_format, it),
+                            fontWeight = FontWeight.Bold,
+                            color = colorScheme.onSurface,
+                            fontSize = 16.sp
+                        )
+                    }
                     Text(
-                        text = app.studentName,
-                        fontWeight = FontWeight.Bold,
-                        color = colorScheme.onSurface,
-                        fontSize = 16.sp
-                    )
-                    Text(
-                        text = "Applying for: '${app.oppTitle}'",
+                        text = try {
+                            val format = java.text.SimpleDateFormat(
+                                "yyyy-MM-dd'T'HH:mm:ss",
+                                java.util.Locale.getDefault()
+                            )
+                            val date = format.parse(app.joinedAt)
+                            formatTimeAgo(date?.time ?: 0L)
+                        } catch (e: Exception) {
+                            app.joinedAt
+                        },
                         color = colorScheme.onSurface.copy(alpha = 0.6f),
                         fontSize = 13.sp
                     )
                 }
-
-                Text(
-                    text = formatTimeAgo(app.appliedAt),
-                    color = colorScheme.onSurface.copy(alpha = 0.4f),
-                    fontSize = 11.sp
-                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            if (app.status == "Pending") {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Button(
-                        onClick = onReject,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colorScheme.errorContainer,
-                            contentColor = colorScheme.error
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("Reject")
-                    }
+            when {
+                isPending -> {
+                    if (actionLoading) {
+                        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = colorScheme.primary
+                            )
+                        }
+                    } else {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End
+                        ) {
+                            Button(
+                                onClick = {
+                                    actionLoading = true
+                                    participationViewModel.rejectApplication(app.id) { success ->
+                                        actionLoading = false
+                                        if (success) {
+                                            notViewModel.sendNotification(
+                                                NotificationModel(
+                                                    receiverId = app.user,
+                                                    senderId = orgId,
+                                                    title = "تحديث حالة الطلب",
+                                                    message = "نأسف، تم رفض طلب انضمامك إلى الفرصة التطوعية ${app.activityTitle}."
+                                                )
+                                            )
+                                        }
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colorScheme.errorContainer,
+                                    contentColor = colorScheme.error
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(stringResource(R.string.reject))
+                            }
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                            Spacer(modifier = Modifier.width(8.dp))
 
-                    Button(
-                        onClick = onAccept,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = colorScheme.primary,
-                            contentColor = colorScheme.onPrimary
-                        ),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text("Accept", fontWeight = FontWeight.Bold)
+                            Button(
+                                onClick = {
+                                    actionLoading = true
+                                    participationViewModel.approveApplication(app.id) { success ->
+                                        actionLoading = false
+                                        if (success) {
+                                            notViewModel.sendNotification(
+                                                NotificationModel(
+                                                    receiverId = app.user,
+                                                    senderId = orgId,
+                                                    title = "تحديث حالة الطلب",
+                                                    message = "لقد تم قبولك في فرصة, ${app.activityTitle}"
+                                                )
+                                            )
+                                        }
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colorScheme.primary,
+                                    contentColor = colorScheme.onPrimary
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text(stringResource(R.string.accept), fontWeight = FontWeight.Bold)
+                            }
+                        }
                     }
                 }
-            } else {
-                Surface(
-                    color = if (app.status == "Accepted") Color(0xFF4CAF50).copy(alpha = 0.1f) else colorScheme.error.copy(alpha = 0.1f),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text(
-                        text = if (app.status == "Accepted") "Accepted ✓" else "Rejected ✗",
-                        color = if (app.status == "Accepted") Color(0xFF4CAF50) else colorScheme.error,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 12.sp
-                    )
+                isAccepted -> {
+                    // إذا كانت مقبولة، نعرض زر إتمام المشاركة (Complete) بجانب الشارة أو مكانها
+                    if (actionLoading) {
+                        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(24.dp),
+                                color = colorScheme.primary
+                            )
+                        }
+                    } else {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Surface(
+                                color = Color(0xFF4CAF50).copy(alpha = 0.15f),
+                                shape = RoundedCornerShape(8.dp),
+                                border = BorderStroke(1.dp, badgeColor.copy(alpha = 0.3f))
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.accepted_status),
+                                    color = Color(0xFF388E3C),
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp
+                                )
+                            }
+
+                            Button(
+                                onClick = {
+                                    actionLoading = true
+                                    // افترض أن الـ ViewModel يحتوي على دالة completeParticipation
+                                    participationViewModel.completeParticipation(app.id) { success ->
+                                        actionLoading = false
+                                        if (success) {
+                                            notViewModel.sendNotification(
+                                                NotificationModel(
+                                                    receiverId = app.user,
+                                                    senderId = orgId,
+                                                    title = "إتمام الفرصة",
+                                                    message = "تهانينا، تم إتمام مشاركتك في فرصة ${app.activityTitle} بنجاح."
+                                                )
+                                            )
+                                        }
+                                    }
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF2196F3),
+                                    contentColor = Color.White
+                                ),
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Text("إتمام (Complete)", fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            }
+                        }
+                    }
+                }
+                else -> {
+                    // الحالات المنتهية الأخرى (مكتمل أو مرفوض)
+                    Surface(
+                        color = when {
+                            isCompleted -> Color(0xFF2196F3).copy(alpha = 0.15f)
+                            else -> colorScheme.error.copy(alpha = 0.15f)
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.dp, badgeColor.copy(alpha = 0.3f))
+                    ) {
+                        Text(
+                            text = when {
+                                isCompleted -> "مكتمل (Completed)" // أو استبدلها بـ stringResource لو متوفرة
+                                else -> stringResource(R.string.rejected_status)
+                            },
+                            color = when {
+                                isCompleted -> Color(0xFF1976D2)
+                                else -> colorScheme.error
+                            },
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 12.sp
+                        )
+                    }
                 }
             }
         }

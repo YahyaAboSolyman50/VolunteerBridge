@@ -1,10 +1,18 @@
 package com.example.volunteerbridge.data.model.response
 
+import com.google.gson.annotations.SerializedName
+
 data class ParticipationResponse(
     val id: Int,
-    val activity_title: String,
-    val joined_at: String,
-    val status: String,
     val user: Int,
-    val activity: Int
+    @SerializedName("student_name")
+    val studentName: String?,
+    @SerializedName("university_id")
+    val universityId: String?,
+    val activity: Int,
+    @SerializedName("activity_title")
+    val activityTitle: String,
+    val status: String,
+    @SerializedName("joined_at")
+    val joinedAt: String
 )

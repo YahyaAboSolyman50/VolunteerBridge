@@ -32,27 +32,26 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.volunteerbridge.app.R
-import com.example.volunteerbridge.model.UserType
+import com.example.volunteerbridge.model.classes.status.AuthState
 import com.example.volunteerbridge.screens.Screen
-import com.example.volunteerbridge.viewmodel.AuthViewModel
-import com.example.volunteerbridge.viewmodel.SplashViewModel
+import com.example.volunteerbridge.viewmodelApi.SplashViewModel
+import com.example.volunteerbridge.viewmodelApi.AuthViewModelApi
 import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(
     navController: NavController,
     viewModel: SplashViewModel,
-    authViewModel: AuthViewModel // أضفنا الـ AuthViewModel هنا
+    authViewModel: AuthViewModelApi
 ) {
     var startAnimation by remember { mutableStateOf(false) }
 
-    // نراقب حالة نوع المستخدم من الـ AuthViewModel
-    val userType by authViewModel.userType.collectAsState()
+    // نراقب حالة الجلسة والتسجيل عبر الـ AuthState الجديد
+    val authState by authViewModel.authState.collectAsState()
 
     val alphaAnim by animateFloatAsState(
         targetValue = if (startAnimation) 1f else 0f,
@@ -61,27 +60,26 @@ fun SplashScreen(
 
     LaunchedEffect(Unit) {
         startAnimation = true
-        // 1. نبدأ بفحص الجلسة المحفوظة فوراً
-        authViewModel.checkSavedSession()
 
-        delay(2500) // وقت الأنيميشن
+        // ننتظر انتهاء وقت الأنيميشن وعملية فحص الجلسة (التي تبدأ تلقائياً في init الـ ViewModel)
+        delay(2500)
 
-        // 2. تحديد الوجهة بناءً على المنطق
+        // تحديد الوجهة بناءً على حالة التشغيل لأول مرة وحالة الـ Authentication
         if (viewModel.isFirstTime()) {
             navController.navigate(Screen.OnboardingScreen.rout) {
                 popUpTo(Screen.SplashScreen.rout) { inclusive = true }
             }
         } else {
-            // إذا لم تكن المرة الأولى، نتحقق من حالة المستخدم
-            when (userType) {
-                is UserType.Student, is UserType.Organization -> {
-                    // إذا وجدنا جلسة محفوظة (طالب أو منظمة) نذهب للرئيسية فوراً
+            // نتحقق من الـ AuthState الحالي للجلسة المحفوظة
+            when (authState) {
+                is AuthState.Success -> {
+                    // إذا وجدنا جلسة صحيحة وتم تحميل الملف الشخصي بنجاح، نتوجه للرئيسية فوراً
                     navController.navigate(Screen.HomeScreen.rout) {
                         popUpTo(Screen.SplashScreen.rout) { inclusive = true }
                     }
                 }
                 else -> {
-                    // إذا لم تكن هناك جلسة (Guest أو Error) نذهب للوجن
+                    // في الحالات الأخرى (Idle أو Error أو Loading مستمر بدون بيانات)، نتوجه لصفحة تسجيل الدخول
                     navController.navigate(Screen.LoginScreen.rout) {
                         popUpTo(Screen.SplashScreen.rout) { inclusive = true }
                     }
@@ -92,6 +90,7 @@ fun SplashScreen(
 
     Splash(alpha = alphaAnim)
 }
+
 @Composable
 fun Splash(alpha: Float) {
     val colorScheme = MaterialTheme.colorScheme
@@ -107,14 +106,13 @@ fun Splash(alpha: Float) {
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(backgroundGradient), // تطبيق التدرج اللوني
+            .background(backgroundGradient),
         contentAlignment = Alignment.Center,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // إضافة بطاقة (Card) حول الشعار ليعطي عمقاً (Elevation)
             Surface(
                 modifier = Modifier
                     .size(160.dp)
@@ -135,7 +133,6 @@ fun Splash(alpha: Float) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // اسم التطبيق مع تحسين الخط والتباعد
             Text(
                 text = stringResource(R.string.app_name),
                 color = colorScheme.primary,
@@ -146,7 +143,6 @@ fun Splash(alpha: Float) {
                 modifier = Modifier.alpha(alpha)
             )
 
-            // إضافة شعار بسيط (Slogan) تحت الاسم
             Text(
                 text = "Connecting Hearts, Building Bridges",
                 color = colorScheme.onBackground.copy(alpha = 0.5f),
@@ -158,13 +154,12 @@ fun Splash(alpha: Float) {
             )
         }
 
-        // إضافة مؤشر تحميل بسيط في الأسفل ليوحي بأن التطبيق "يفكر"
         CircularProgressIndicator(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 50.dp)
                 .size(30.dp)
-                .alpha(alpha.coerceAtMost(0.6f)), // تقليل شفافيته قليلاً
+                .alpha(alpha.coerceAtMost(0.6f)),
             color = colorScheme.primary,
             strokeWidth = 2.dp
         )

@@ -1,5 +1,8 @@
 package com.example.volunteerbridge.view.nav_bottom.org.home
 
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -13,53 +16,87 @@ import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.volunteerbridge.model.classes.ApplicationModel
-import com.example.volunteerbridge.view.functions.formatFullDate
-import com.example.volunteerbridge.viewmodel.OpportunityViewModel
-import com.example.volunteerbridge.viewmodel.OrgViewModel
+import com.example.volunteerbridge.app.R
+import com.example.volunteerbridge.data.model.response.ActivityResponse
+import com.example.volunteerbridge.data.model.response.ParticipationResponse
+import com.example.volunteerbridge.viewmodelApi.ActivityViewModel
+import com.example.volunteerbridge.viewmodelApi.OrganizationViewModel
+import com.valentinilk.shimmer.shimmer
+import java.time.LocalDate
 
 /**
- * شاشة إحصائيات الفرصة للمؤسسة
- * تعرض: عدد المتقدمين، الشواغر المتبقية، التصنيف، وقائمة مصغرة لأحدث المتقدمين.
+ * شاشة إحصائيات الفرصة للمؤسسة عبر جلب البيانات من الـ API مباشرة باستخدام ID مع دعم الشيمر الهيكلي
  */
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun OpportunityStatsScreen(
     oppId: String,
-    orgViewModel: OrgViewModel,          // ✨ تعديل: إصلاح تعريف الباراميتر الأول
-    oppViewModel: OpportunityViewModel,  // ✨ تعديل: إصلاح تعريف الباراميتر الثاني
+    orgViewModel: OrganizationViewModel,
+    oppViewModel: ActivityViewModel,
+    onAllAppClick: (Int) -> Unit,
+    onManageClick: (Int) -> Unit,
     onBackClick: () -> Unit,
-    onAllAppClick: (String) -> Unit
 ) {
-    val oppList by oppViewModel.orgOpp
-    val opp = remember(oppList, oppId) { oppList.find { it.id == oppId } }
+    val context = LocalContext.current
 
-    val isTopPerforming = remember(oppList, opp) {
-        val maxApplicants = oppList.maxOfOrNull { it.applicantsCount } ?: 0
-        opp != null && opp.applicantsCount == maxApplicants && maxApplicants > 0
+    var currentActivity by remember { mutableStateOf<ActivityResponse?>(null) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    // جلب تفاصيل الفرصة بناءً على الـ ID عند فتح الشاشة
+    LaunchedEffect(oppId) {
+        val idInt = oppId.toIntOrNull()
+        if (idInt != null) {
+            oppViewModel.getActivityById(idInt) { activity ->
+                currentActivity = activity
+                isLoading = false
+            }
+        } else {
+            isLoading = false
+        }
     }
 
-    // ✨ تعديل: إصلاح الخطأ الإملائي وقراءة البيانات بشكل صحيح من الـ ViewModel الممرر
+    val oppList by oppViewModel.myActivities.collectAsState()
+    val isTopPerforming = remember(oppList, currentActivity) {
+        val maxApplicants = oppList.maxOfOrNull { it.applicantsCount ?: 0 } ?: 0
+        val currentApplicants = currentActivity?.applicantsCount ?: 0
+        currentActivity != null && currentApplicants == maxApplicants && maxApplicants > 0
+    }
+
     val allApplications by orgViewModel.orgApplications
     val currentOppApplications = remember(allApplications, oppId) {
-        allApplications.filter { it.oppId == oppId }
+        allApplications.filter { it.id.toString() == oppId }
     }
 
-    val orgModel by orgViewModel.currentOrgData
+    // التحقق من حالة النشاط: بناءً على الحالة النصية/الرقمية وأيضاً مقارنة تاريخ النهاية مع التاريخ الحالي
+    val isActive = remember(currentActivity) {
+        val activity = currentActivity
+        if (activity == null) {
+            false
+        } else {
+            val statusCondition = activity.status.equals("Active", ignoreCase = true) || activity.status == "1"
 
-    // ✨ إضافة: التأكد من جلب تحديثات الطلبات فور فتح الشاشة لضمان عدم ظهور القائمة فارغة
-    LaunchedEffect(orgModel?.uid) {
-        orgModel?.uid?.let { uid ->
-            orgViewModel.fetchApplicationsForOrg(uid)
+            // التحقق من أن تاريخ اليوم لم يتجاوز تاريخ انتهاء الفرصة (EndDate)
+            val isNotExpired = try {
+                if (!activity.endDate.isNullOrBlank()) {
+                    val parsedDate = LocalDate.parse(activity.endDate.take(10))
+                    !LocalDate.now().isAfter(parsedDate)
+                } else {
+                    true
+                }
+            } catch (e: Exception) {
+                true
+            }
+
+            statusCondition && isNotExpired
         }
     }
 
@@ -68,99 +105,211 @@ fun OpportunityStatsScreen(
     Scaffold(
         containerColor = colorScheme.background,
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { /* أضف منطق التعديل هنا */ },
-                containerColor = colorScheme.primary,
-                contentColor = colorScheme.onPrimary,
-                icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                text = { Text("Manage Opportunity") }
-            )
+            if (!isLoading) {
+                ExtendedFloatingActionButton(
+                    onClick = { onManageClick(currentActivity?.id ?: oppId.toIntOrNull() ?: 0) },
+                    containerColor = colorScheme.primary,
+                    contentColor = colorScheme.onPrimary,
+                    icon = { Icon(Icons.Default.Settings, contentDescription = null) },
+                    text = { Text(stringResource(R.string.manage_opportunity)) }
+                )
+            }
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
-                .padding(20.dp)
-        ) {
-            HeaderSectionStats(
-                title = opp?.title,
-                isActive = opp?.status == "Active",
-                onBackClick = onBackClick,
-                icon = {
-                    if (isTopPerforming) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            tint = Color(0xFFFFD700),
-                            modifier = Modifier.size(20.dp)
-                        )
-                    } else {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = null,
-                            tint = colorScheme.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                }
-            )
-
-            Spacer(Modifier.height(30.dp))
-
-            // 2. كارد الأداء الرئيسي
-            PerformanceSection(
-                applicantsCount = opp?.applicantsCount ?: 0,
-                vacancies = opp?.vacancies ?: 0
-            )
-
-            Spacer(Modifier.height(20.dp))
-
-            // 3. صف التصنيف وأحدث المتقدمين
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                StatSmallCard(
-                    modifier = Modifier.weight(1f),
-                    title = "Category",
-                    info = opp?.category ?: "General"
-                )
-
-                RecentApplicantsCard(
-                    modifier = Modifier.weight(1.2f),
-                    applicants = currentOppApplications.take(3)
-                )
-            }
-
-            Spacer(Modifier.height(16.dp))
-
-            TimelineSection(
-                startDate = formatFullDate(opp?.startDate ?: 0),
-                endDate = formatFullDate(opp?.endDate ?: 0)
-            )
-
-            Spacer(Modifier.height(32.dp))
-
-            Button(
-                onClick = { onAllAppClick(opp?.id ?: "") },
+        if (isLoading) {
+            // استبدال مؤشر التحميلي الدائري بتصميم الشيمر الهيكلي المتناسق
+            OpportunityStatsShimmer(padding = padding)
+        } else {
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = colorScheme.primary,
-                    contentColor = colorScheme.onPrimary
-                ),
-                shape = RoundedCornerShape(16.dp)
+                    .fillMaxSize()
+                    .padding(padding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(20.dp)
             ) {
-                Text(
-                    text = "View All ${currentOppApplications.size} Applicants",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                HeaderSectionStats(
+                    title = currentActivity?.title,
+                    isActive = isActive,
+                    onBackClick = onBackClick,
+                    icon = {
+                        if (isTopPerforming) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = Color(0xFFFFD700),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = null,
+                                tint = colorScheme.primary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                )
+
+                Spacer(Modifier.height(30.dp))
+
+                PerformanceSection(
+                    applicantsCount = currentActivity?.applicantsCount ?: 0,
+                    vacancies = currentActivity?.volunteerLimit ?: 0
+                )
+
+                Spacer(Modifier.height(20.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    StatSmallCard(
+                        modifier = Modifier.weight(1f),
+                        title = stringResource(R.string.category),
+                        info = currentActivity?.category ?: stringResource(R.string.general_category)
+                    )
+
+                    RecentApplicantsCard(
+                        modifier = Modifier.weight(1.2f),
+                        applicants = currentOppApplications.take(3)
+                    )
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                TimelineSection(
+                    startDate = currentActivity?.startDate ?: stringResource(R.string.not_set),
+                    endDate = currentActivity?.endDate ?: stringResource(R.string.not_set)
+                )
+
+                Spacer(Modifier.height(32.dp))
+
+                Button(
+                    onClick = {
+                        onAllAppClick(currentActivity?.id ?: oppId.toIntOrNull() ?: 0)
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorScheme.primary,
+                        contentColor = colorScheme.onPrimary
+                    ),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Text(
+                        text = stringResource(R.string.view_all_applicants_count, currentOppApplications.size),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun OpportunityStatsShimmer(padding: PaddingValues) {
+    val colorScheme = MaterialTheme.colorScheme
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(padding)
+            .padding(20.dp)
+            .shimmer(),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        // رأس الشاشة الوهمي
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .background(colorScheme.surfaceVariant, CircleShape)
+            )
+            Spacer(Modifier.width(12.dp))
+            Column {
+                Box(
+                    modifier = Modifier
+                        .width(180.dp)
+                        .height(18.dp)
+                        .background(colorScheme.surfaceVariant, RoundedCornerShape(4.dp))
+                )
+                Spacer(Modifier.height(6.dp))
+                Box(
+                    modifier = Modifier
+                        .width(70.dp)
+                        .height(14.dp)
+                        .background(colorScheme.surfaceVariant, RoundedCornerShape(4.dp))
                 )
             }
         }
+
+        Spacer(Modifier.height(10.dp))
+
+        // بطاقات الأداء الوهمية (PerformanceSection)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(100.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(24.dp))
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(100.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(24.dp))
+            )
+        }
+
+        // بطاقات القسم والمتقدمين الوهمية
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(110.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(20.dp))
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1.2f)
+                    .height(110.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(20.dp))
+            )
+        }
+
+        // بطاقات التواريخ الوهمية (TimelineSection)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(80.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(20.dp))
+            )
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(80.dp)
+                    .background(colorScheme.surfaceVariant, RoundedCornerShape(20.dp))
+            )
+        }
+
+        // زر العرض الوهمي بالأفل
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(56.dp)
+                .background(colorScheme.surfaceVariant, RoundedCornerShape(16.dp))
+        )
     }
 }
 
@@ -169,6 +318,7 @@ fun HeaderSectionStats(
     title: String?, isActive: Boolean? = false, onBackClick: () -> Unit,
     icon: @Composable () -> Unit
 ) {
+    Log.d("ActivityStatus", "Status is active: ${isActive}")
     val colorScheme = MaterialTheme.colorScheme
     Row(verticalAlignment = Alignment.CenterVertically) {
         IconButton(onClick = onBackClick) {
@@ -186,7 +336,7 @@ fun HeaderSectionStats(
         Spacer(Modifier.width(12.dp))
         Column {
             Text(
-                text = title ?: "Loading...",
+                text = title ?: stringResource(R.string.loading_text),
                 color = colorScheme.onBackground,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
@@ -197,7 +347,7 @@ fun HeaderSectionStats(
                 modifier = Modifier.padding(top = 4.dp)
             ) {
                 Text(
-                    text = if (isActive == true) "● Active" else "● Closed",
+                    text = if (isActive == true) stringResource(R.string.status_active) else stringResource(R.string.status_closed),
                     color = if (isActive == true) Color(0xFF4CAF50) else colorScheme.error,
                     style = MaterialTheme.typography.labelSmall,
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
@@ -244,8 +394,9 @@ fun StatCard(
 }
 
 @Composable
-fun RecentApplicantsCard(modifier: Modifier, applicants: List<ApplicationModel>) {
+fun RecentApplicantsCard(modifier: Modifier, applicants: List<ParticipationResponse>) {
     val colorScheme = MaterialTheme.colorScheme
+
     Card(
         modifier = modifier,
         colors = CardDefaults.cardColors(containerColor = colorScheme.surface),
@@ -253,11 +404,11 @@ fun RecentApplicantsCard(modifier: Modifier, applicants: List<ApplicationModel>)
         border = BorderStroke(1.dp, colorScheme.onSurface.copy(alpha = 0.05f))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Recent", color = colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            Text(stringResource(R.string.recent_title), color = colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp)
             Spacer(Modifier.height(12.dp))
 
             if (applicants.isEmpty()) {
-                Text("No applicants yet", color = colorScheme.onSurface.copy(alpha = 0.4f), fontSize = 11.sp)
+                Text(stringResource(R.string.no_applicants_yet), color = colorScheme.onSurface.copy(alpha = 0.4f), fontSize = 11.sp)
             } else {
                 applicants.forEach { app ->
                     Row(
@@ -271,7 +422,7 @@ fun RecentApplicantsCard(modifier: Modifier, applicants: List<ApplicationModel>)
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = app.studentName.take(1).uppercase(),
+                                text = app.user.toString().take(1).uppercase(),
                                 color = colorScheme.primary,
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold
@@ -279,7 +430,7 @@ fun RecentApplicantsCard(modifier: Modifier, applicants: List<ApplicationModel>)
                         }
                         Spacer(Modifier.width(8.dp))
                         Text(
-                            text = app.studentName,
+                            text = app.user.toString(),
                             color = colorScheme.onSurface,
                             fontSize = 12.sp,
                             maxLines = 1
@@ -341,7 +492,7 @@ fun DateCard(
                     fontWeight = FontWeight.Medium
                 )
             }
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier.height(10.dp))
             Text(
                 text = date,
                 color = colorScheme.onSurface,
@@ -360,22 +511,22 @@ fun TimelineSection(startDate: String?, endDate: String?) {
     ) {
         DateCard(
             modifier = Modifier.weight(1f),
-            label = "Start Date",
-            date = startDate ?: "Not set",
+            label = stringResource(R.string.start_date_label),
+            date = startDate ?: stringResource(R.string.not_set),
             iconColor = Color(0xFF4DB6AC)
         )
 
         DateCard(
             modifier = Modifier.weight(1f),
-            label = "End Date",
-            date = endDate ?: "Not set",
+            label = stringResource(R.string.end_date_label),
+            date = endDate ?: stringResource(R.string.not_set),
             iconColor = Color(0xFFFF8A65)
         )
     }
 }
 
 @Composable
-fun PerformanceSection(applicantsCount: Int, vacancies: Int) {
+fun PerformanceSection(applicantsCount: Long, vacancies: Long) {
     val remaining = (vacancies - applicantsCount).coerceAtLeast(0)
 
     Row(
@@ -384,14 +535,14 @@ fun PerformanceSection(applicantsCount: Int, vacancies: Int) {
     ) {
         StatCard(
             modifier = Modifier.weight(1f),
-            label = "Reserved Slots",
+            label = stringResource(R.string.reserved_slots_label),
             value = "$applicantsCount",
             accentColor = Color.White
         )
 
         StatCard(
             modifier = Modifier.weight(1f),
-            label = "Remaining Slots",
+            label = stringResource(R.string.remaining_slots_label),
             value = "$remaining",
             accentColor = if (remaining > 0) Color(0xFF4DB6AC) else Color(0xFFFF4B4B)
         )

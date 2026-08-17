@@ -1,14 +1,16 @@
 package com.example.volunteerbridge.data.model.request
 
+import com.google.gson.annotations.SerializedName
+
 data class ActivityRequest(
-    val title: String,
-    val description: String,
-    val category: String?,
-    val location: String,
-    val start_date: String?,
-    val end_date: String?,
-    val registration_deadline: String?, // الموعد النهائي للتسجيل (مقبل للحذف/Null)
-    val volunteer_limit: Long?,
-    val status: String?,                // حالة الفرصة عند الإنشاء
-    val hours: Long?
+    @SerializedName("title") val title: String,
+    @SerializedName("description") val description: String,
+    @SerializedName("category") val category: String? = null,
+    @SerializedName("location") val location: String,
+    @SerializedName("start_date") val startDate: String? = null,              // YYYY-MM-DD
+    @SerializedName("end_date") val endDate: String? = null,                  // YYYY-MM-DD
+    @SerializedName("registration_deadline") val registrationDeadline: String? = null, // YYYY-MM-DD
+    @SerializedName("volunteer_limit") val volunteerLimit: Long? = null,      // تم تعديلها لتطابق الـ Swagger (Integer/Long)
+    @SerializedName("status") val status: String? = "active",
+    @SerializedName("hours") val hours: Long? = null
 )

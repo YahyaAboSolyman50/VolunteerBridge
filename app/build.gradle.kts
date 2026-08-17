@@ -60,6 +60,19 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.analytics)
 
+    implementation(libs.gson)
+
+    // مكتبة ريتروفيت الأساسية
+    implementation(libs.retrofit)
+
+    // محول البيانات لتحويل الـ JSON باستخدام الـ Gson تلقائياً
+    implementation(libs.converter.gson)
 
 
+    implementation(libs.accompanist.swiperefresh)
+
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging)
+
+    implementation(libs.compose.shimmer)
 }

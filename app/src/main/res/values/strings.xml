@@ -39,6 +39,211 @@
     <string name="manageOpp">Manage Opportunities</string>
     <string name="ActivePost">Active Posting</string>
     <string name="description">Description</string>
-    <string name="DetailOpp">Detail Opportunit</string>
+    <string name="DetailOpp">Detail Opportunity</string>
     <string name="app">Applicant Requests</string>
+
+    <!-- Welcome & General -->
+    <string name="welcome_message">Welcome, %1$s!</string>
+    <string name="welcome_default">Welcome!</string>
+    <string name="ready_to_impact">Ready to make an impact today?</string>
+    <string name="total_volunteer_hours">Total Volunteer Hours</string>
+    <string name="hours_unit">%1$d Hours</string>
+    <string name="search_opportunity_hint">Search for an opportunity...</string>
+    <string name="available_opportunities">Available Opportunities</string>
+
+    <!-- All Opportunities Screen Strings -->
+    <string name="all_opportunities">All Opportunities</string>
+    <string name="search_all_opportunities">Search all opportunities...</string>
+
+    <!-- Filters -->
+    <string name="filter_status">Status</string>
+    <string name="filter_type">Type</string>
+    <string name="filter_category">Category</string>
+
+    <!-- States & Messages -->
+    <string name="no_opportunities_found">No opportunities found matching your filters.</string>
+    <string name="data_updated_successfully">Data updated successfully</string>
+    <string name="successfully_joined_opportunity">Successfully joined the opportunity!</string>
+    <string name="new_join_request">New join request</string>
+    <string name="student_joined_opportunity_msg">A student joined your volunteer opportunity: %1$s</string>
+    <string name="notification_sent_to_org">Notification sent to organization</string>
+    <string name="failed_to_send_notification">Failed to send notification</string>
+
+    <!-- Button & Card States -->
+    <string name="applications_closed">Applications Closed</string>
+    <string name="already_joined">Already Joined</string>
+    <string name="already_enrolled_another">Already Enrolled in Another</string>
+    <string name="quick_apply">Quick Apply</string>
+    <string name="general_category">General</string>
+    <string name="closed_status">Closed</string>
+    <string name="organization_prefix">Organization #%1$s</string>
+
+    <!-- Toast Warnings -->
+    <string name="opportunity_closed_toast">Sorry, this volunteer opportunity is currently closed</string>
+    <string name="already_joined_toast">You are already registered in this opportunity</string>
+    <string name="cannot_join_multiple_toast">You cannot join more than one volunteer opportunity at the same time</string>
+
+    <!-- My Applications Screen Strings -->
+    <string name="my_applications">My Applications</string>
+    <string name="tab_pending">Pending</string>
+    <string name="tab_approved">Approved</string>
+    <string name="tab_completed">Completed</string>
+    <string name="tab_rejected">Rejected</string>
+    <string name="no_applications_found">No %1$s applications found.</string>
+    <string name="joined_at_prefix">Joined at: %1$s</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="application_canceled_success">Application canceled successfully</string>
+    <string name="application_canceled_failure">Failed to cancel application</string>
+
+    <!-- Student Profile Screen Strings -->
+    <string name="my_profile">My Profile</string>
+    <string name="loading_text">Loading...</string>
+    <string name="volunteer_student_badge">VOLUNTEER STUDENT</string>
+    <string name="volunteer_badges_and_progress">Volunteer Badges &amp; Progress</string>
+    <string name="hours_completed_format">%1$.0f / %2$d Hours Completed</string>
+    <string name="university_id">University ID</string>
+    <string name="email_address">Email Address</string>
+    <string name="institution_name">Institution</string>
+    <string name="islamic_university_of_gaza">Islamic University of Gaza</string>
+    <string name="sign_out">Sign Out</string>
+    <string name="viewAll">View All</string>
+
+    <!-- Edit Opportunity Screen -->
+    <string name="edit_opportunity_title">Edit Opportunity</string>
+    <string name="system_info_read_only">System Information (Read Only)</string>
+    <string name="activity_id_label">Activity ID</string>
+    <string name="status_label">Status</string>
+    <string name="general_details_label">General Details</string>
+    <string name="title_label">Title</string>
+    <string name="category_label">Category</string>
+    <string name="location_label">Location</string>
+    <string name="schedule_deadlines_label">Schedule &amp; Deadlines</string>
+    <string name="start_date_label">Start Date</string>
+    <string name="end_date_label">End Date</string>
+    <string name="registration_deadline_label">Registration Deadline</string>
+    <string name="volunteer_limit_label">Volunteer Limit</string>
+    <string name="hours_label">Hours</string>
+    <string name="description_label">Description</string>
+    <string name="update_opportunity_button">Update Opportunity</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="select_date">Select Date</string>
+    <string name="back">Back</string>
+
+    <string name="organization_default_name">Organization</string>
+    <string name="stat_active_ops">Active Ops</string>
+    <string name="stat_applicants">Applicants</string>
+    <string name="top_performing_title">Top Performing</string>
+    <string name="recent_activity_title">Recent Activity</string>
+    <string name="view_all">View All</string>
+    <string name="hello_user_greeting">Hello, %s 👋</string>
+    <string name="status_verified_org">Verified Organization</string>
+    <string name="status_pending_verification">Pending Verification</string>
+    <string name="no_opportunities_posted">No opportunities posted yet</string>
+    <string name="status_active_label">Active</string>
+    <string name="no_recent_activity">No recent activity yet</string>
+
+    <string name="manage_volunteers_title">Manage Volunteers</string>
+    <string name="no_active_volunteers_yet">No active volunteers in this opportunity yet.</string>
+    <string name="finalize_all_for_everyone">Finalize All for Everyone</string>
+    <string name="volunteer_hours_report_summary">Volunteer Hours Report Summary</string>
+    <string name="total_records_up_to_date">Total records are up to date.</string>
+    <string name="done_added_toast">Done added</string>
+    <string name="status_working">Working</string>
+    <string name="volunteer_name_format">Volunteer %s</string>
+    <string name="status_format">Status: %s</string>
+    <string name="hrs_reward_format">%d Hrs Reward</string>
+    <string name="finalize_and_credit">Finalize &amp; Credit</string>
+
+    <string name="error_org_id_not_found">Error: Organization ID not found!</string>
+    <string name="all_notifications_marked_read">All notifications marked as read</string>
+    <string name="cannot_update_notifications_missing_id">Cannot update notifications: ID is missing</string>
+    <string name="invalid_notification_id">Invalid notification ID</string>
+
+    <string name="manage_opportunity">Manage Opportunity</string>
+    <string name="category">Category</string>
+    <string name="not_set">Not set</string>
+    <string name="view_all_applicants_count">View All %d Applicants</string>
+    <string name="status_active">● Active</string>
+    <string name="status_closed">● Closed</string>
+    <string name="recent_title">Recent</string>
+    <string name="no_applicants_yet">No applicants yet</string>
+    <string name="reserved_slots_label">Reserved Slots</string>
+    <string name="remaining_slots_label">Remaining Slots</string>
+
+    <string name="manage_opportunities_title">Manage Opportunities</string>
+    <string name="back_content_description">Back</string>
+    <string name="add_opportunity_content_description">Add Opportunity</string>
+    <string name="edit_button">Edit</string>
+    <string name="details_button">Details</string>
+
+    <string name="create_opportunity_title">Add New Volunteer Opportunity</string>
+    <string name="basic_information">Basic Information</string>
+    <string name="opportunity_title_label">Opportunity Title</string>
+    <string name="detailed_description_label">Detailed Description</string>
+    <string name="select_category">Select Category</string>
+    <string name="location_hours_limit_section">Location, Hours, and Limit</string>
+    <string name="location_address_label">Location / Address</string>
+    <string name="volunteer_hours_label">Volunteer Hours</string>
+    <string name="dates_and_status_section">Dates and Status</string>
+    <string name="fill_all_fields_error">Please fill in all required fields and select a category</string>
+    <string name="opportunity_published_success">Opportunity published successfully!</string>
+    <string name="publish_opportunity_button">Publish Opportunity Now</string>
+
+    <string name="lock_icon_desc">Lock Icon</string>
+    <string name="verification_required_title">Account Verification Required</string>
+    <string name="verification_required_desc">You must verify your organization account to access management features and post new volunteer opportunities.</string>
+    <string name="verify_my_account_button">Verify My Account Now</string>
+
+    <string name="edit_org_profile_title">Edit Organization Profile</string>
+    <string name="org_name_label">Organization Name</string>
+    <string name="phone_number_label">Phone Number</string>
+    <string name="license_number_label">License Number</string>
+    <string name="select_category_hint">Select Category</string>
+    <string name="category_type_label">Category / Type</string>
+    <string name="update_success_msg">Updated successfully</string>
+    <string name="save_changes_button">Save Changes</string>
+
+    <string name="logout_button">Logout</string>
+    <string name="default_org_name">Organization Name</string>
+    <string name="default_email">email@example.com</string>
+    <string name="organization_details_title">Organization Details</string>
+    <string name="org_type_label">Org Type</string>
+    <string name="not_specified">Not Specified</string>
+    <string name="phone_label">Phone</string>
+    <string name="no_phone">No Phone</string>
+    <string name="license_id_label">License ID</string>
+    <string name="na_value">N/A</string>
+    <string name="about_us_title">About Us</string>
+    <string name="no_description_provided">No description provided for this organization.</string>
+    <string name="edit_profile_button">Edit Profile</string>
+    <string name="verified_content_desc">Verified</string>
+
+    <string name="total_applications">Total Applications: %d</string>
+    <string name="no_requests_format">No %s requests</string>
+    <string name="reject">Reject</string>
+    <string name="accept">Accept</string>
+    <string name="accepted_status">Accepted ✓</string>
+    <string name="rejected_status">Rejected ✗</string>
+
+    <string name="success_joined">Successfully joined the opportunity!</string>
+    <string name="fail_joined">Failed to join. Please try again.</string>
+    <string name="new_application_title">New Application</string>
+    <string name="new_application_message_format">A student applied to your volunteer opportunity: %s</string>
+    <string name="token_not_found">Authentication token not found.</string>
+    <string name="back_desc">Back</string>
+    <string name="org_id_format">Organization #%d</string>
+    <string name="na_status">N/A</string>
+    <string name="label_location">Location</string>
+    <string name="label_hours">Hours</string>
+    <string name="hours_format">+%dh</string>
+    <string name="label_seats_left">Seats Left</string>
+    <string name="seats_format">%d/%d</string>
+    <string name="label_deadline">Deadline</string>
+    <string name="section_description">Description</string>
+    <string name="no_description">No description provided.</string>
+
+    <string name="error_student_id_not_found">Error: Student ID not found!</string>
+    <string name="apps_closed">App Closed</string>
+
 </resources>

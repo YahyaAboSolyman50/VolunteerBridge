@@ -1,14 +1,33 @@
 package com.example.volunteerbridge.data.model.request
 
+import com.google.gson.annotations.SerializedName
+
 /**
- * كائن إرسال البيانات الخاص بالمؤسسات (Organizations) إلى السيرفر
- * متوافق مع الحقول المطلوبة والإجبارية في Django Swagger
+ * كائن إرسال بيانات إنشاء/تعديل المؤسسة إلى السيرفر
+ * متوافق تماماً مع مخطط Swagger
  */
 data class OrganizationRequest(
-    val name: String,         // اسم المؤسسة (مطلوب)
-    val category: String,     // تصنيف المؤسسة (مطلوب)
-    val phone: String?,       // رقم الهاتف (اختياري / قابل للحذف)
-    val email: String?,       // البريد الإلكتروني (اختياري / قابل للحذف)
-    val address: String?,     // العنوان (اختياري / قابل للحذف)
-    val description: String?  // وصف المؤسسة (اختياري / قابل للحذف)
+    @SerializedName("name")
+    val name: String,                  // مطلوب * (Max: 255)
+
+    @SerializedName("category")
+    val category: String,              // مطلوب * (تأكد من إرسال أحد الخيارات المقبولة في الـ Enum)
+
+    @SerializedName("email")
+    val email: String? = null,
+
+    @SerializedName("password")
+    val password: String? = null,
+
+    @SerializedName("license")
+    val license: String? = null,
+
+    @SerializedName("phone")
+    val phone: String? = null,
+
+    @SerializedName("address")
+    val address: String? = null,
+
+    @SerializedName("description")
+    val description: String? = null
 )

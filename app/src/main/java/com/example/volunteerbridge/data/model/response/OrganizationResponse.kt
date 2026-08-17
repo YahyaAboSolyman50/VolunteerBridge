@@ -1,16 +1,42 @@
 package com.example.volunteerbridge.data.model.response
 
+import com.google.gson.annotations.SerializedName
+
 /**
- * كائن استقبال البيانات الخاص بالمؤسسات (Organizations) من السيرفر
- * يحتوي على جميع الحقول الكاملة بما فيها الحقول التي تحمل وسم (readOnly: true)
+ * كائن استقبال بيانات المؤسسة من السيرفر
+ * يحتوي على جميع الحقول المرجعة من Swagger بما فيها ReadOnly و Nullable
  */
 data class OrganizationResponse(
-    val id: Int,              // الرقم المعرف الفريد للمؤسسة (تلقائي من السيرفر)
-    val name: String,         // اسم المؤسسة
-    val category: String,     // تصنيف المؤسسة
-    val phone: String?,       // رقم الهاتف
-    val email: String?,       // البريد الإلكتروني
-    val address: String?,     // العنوان
-    val description: String?,  // وصف المؤسسة
-    val created_at: String    // تاريخ ووقت إنشاء الحساب في النظام
+    @SerializedName("id")
+    val id: Int,                        // ReadOnly (تلقائي من السيرفر)
+
+    @SerializedName("name")
+    val name: String,                   // اسم المؤسسة
+
+    @SerializedName("category")
+    val category: String,               // تصنيف المؤسسة
+
+    @SerializedName("email")
+    val email: String?,                 // البريد الإلكتروني (Nullable)
+
+    @SerializedName("phone")
+    val phone: String?,                 // رقم الهاتف (Nullable)
+
+    @SerializedName("address")
+    val address: String?,               // العنوان (Nullable)
+
+    @SerializedName("description")
+    val description: String?,           // التفاصيل والوصف (Nullable)
+
+    @SerializedName("license")
+    val license: String?,               // التلخيص/الترخيص (Nullable)
+
+    @SerializedName("verified")
+    val verified: Boolean? = true,     // حالة التوثيق
+
+    @SerializedName("status")
+    val status: String?,                // حالة الحساب (Enum)
+
+    @SerializedName("created_at")
+    val createdAt: String?              // ReadOnly (تاريخ الإنشاء)
 )
