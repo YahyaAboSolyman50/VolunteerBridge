@@ -41,9 +41,17 @@ Project Structure :
   com.example.volunteerbridge
   │
   ├── data/             # النماذج، طبقة الاتصال، وإدارة الـ Tokens
+  
+  
   ├── model/            # الفئات والنماذج الأساسية (Classes & Models)
+ 
+  
   ├── network/          # إعدادات الـ Retrofit, Interceptors, and Authenticators
+  
+  
   ├── view/             # واجهات المستخدم (Jetpack Compose Screens)
+  
+  
   └── viewmodelApi/     # نماذج العرض (ViewModels) لإدارة منطق الشاشات والربط مع الـ API
 
 
