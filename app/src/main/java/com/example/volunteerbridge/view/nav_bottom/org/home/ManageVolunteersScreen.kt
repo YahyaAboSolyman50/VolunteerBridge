@@ -46,11 +46,11 @@ fun ManageVolunteersScreen(
     val attendanceReport by attendanceViewModel.attendanceReport.collectAsState()
 
     // ضمان الحصول على قيمة ساعات صحيحة
-    val validHours = activityResponse.hours ?: 0L
+    val validHours = activityResponse.hours ?: 0
 
     LaunchedEffect(activityResponse.id) {
+        android.util.Log.d("ActivityHours", "Current hours: ${activityResponse.hours}")
         participationViewModel.fetchApplicantsForActivity(activityResponse.id ?: 0)
-        attendanceViewModel.fetchVolunteerHoursReport()
     }
 
     val activeVolunteers = remember(applications) {
@@ -93,7 +93,7 @@ fun ManageVolunteersScreen(
                                     return@Button
                                 }
                                 activeVolunteers.forEach { volunteer ->
-                                    participationViewModel.completeParticipation(participationId = volunteer.id ?: 0) { success ->
+                                    participationViewModel.completeParticipation(participationId = volunteer.id ?: 0, hours = activityResponse.hours ?: 0) { success ->
                                         if (success) {
                                             participationViewModel.fetchApplicantsForActivity(activityResponse.id ?: 0)
                                         }
@@ -125,7 +125,7 @@ fun ManageVolunteersScreen(
                                 if (validHours <= 0) {
                                     Toast.makeText(context, "لا يمكن إتمام الفرصة بساعات صفر", Toast.LENGTH_SHORT).show()
                                 } else {
-                                    participationViewModel.completeParticipation(participationId = volunteer.id ?: 0) { success ->
+                                    participationViewModel.completeParticipation(participationId = volunteer.id ?: 0 , activityResponse.hours?: 0) { success ->
                                         if (success) {
                                             Toast.makeText(context, context.getString(R.string.done_added_toast), Toast.LENGTH_SHORT).show()
                                             participationViewModel.fetchApplicantsForActivity(activityResponse.id ?: 0)
@@ -183,7 +183,7 @@ fun ManageVolunteersShimmer() {
 @Composable
 fun VolunteerCard(
     volunteer: com.example.volunteerbridge.data.model.response.ParticipationResponse,
-    requiredHours: Long,
+    requiredHours: Int,
     onFinalizeClick: () -> Unit
 ) {
     val colorScheme = MaterialTheme.colorScheme

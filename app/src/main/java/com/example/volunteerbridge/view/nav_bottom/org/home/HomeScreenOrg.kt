@@ -130,7 +130,7 @@ fun OrganizationHomeDesign(
                     StatBox(
                         modifier = Modifier.weight(1f),
                         title = stringResource(R.string.stat_applicants),
-                        value = "${myActivities.sumOf { it.applicantsCount ?: 0L }}",
+                        value = "${myActivities.sumOf { it.applicantsCount ?: 0 }}",
                         icon = Icons.Default.AccountBox,
                         accentColor = colorScheme.secondary
                     )

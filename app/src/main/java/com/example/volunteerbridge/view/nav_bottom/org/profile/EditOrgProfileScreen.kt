@@ -26,6 +26,10 @@ import com.example.volunteerbridge.data.model.OrganizationCategory
 import com.example.volunteerbridge.data.model.request.OrganizationRequest
 import com.example.volunteerbridge.viewmodelApi.OrganizationViewModel
 
+/**
+ * شاشة تعديل ملف المنظمة (EditOrgProfileScreen)
+ * تتيح للمنظمة تحديث بياناتها الأساسية مثل الاسم، رقم الهاتف، رقم الرخصة، التصنيف، والوصف
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditOrgProfileScreen(
@@ -220,6 +224,9 @@ fun EditOrgProfileScreen(
     }
 }
 
+/**
+ * حقل نصي مخصص لإدخال وتعديل البيانات (EditField)
+ */
 @Composable
 fun EditField(label: String, value: String, onValueChange: (String) -> Unit) {
     val colorScheme = MaterialTheme.colorScheme

@@ -104,6 +104,8 @@ fun AppNavHost(
                 AllOpportunitiesScreen(
                     activityViewModel,
                     authViewModelApi,
+                    studentViewModel,
+                    notViewModel,
                     navController
                 )
             }

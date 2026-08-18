@@ -526,7 +526,7 @@ fun TimelineSection(startDate: String?, endDate: String?) {
 }
 
 @Composable
-fun PerformanceSection(applicantsCount: Long, vacancies: Long) {
+fun PerformanceSection(applicantsCount: Int, vacancies: Int) {
     val remaining = (vacancies - applicantsCount).coerceAtLeast(0)
 
     Row(

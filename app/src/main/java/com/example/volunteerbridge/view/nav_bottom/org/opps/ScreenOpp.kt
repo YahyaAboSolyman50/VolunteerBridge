@@ -324,16 +324,29 @@ fun CreateOppScreen(
                 val fillFieldsErrorMsg = stringResource(R.string.fill_all_fields_error)
                 val successPublishMsg = stringResource(R.string.opportunity_published_success)
 
-                // زر النشر
+                // زر النشر مع منطق التحقق من التواريخ
                 Button(
                     onClick = {
-                        val limit = volunteerLimit.toLongOrNull()
-                        val totalHours = hours.toLongOrNull()
+                        val limit = volunteerLimit.toIntOrNull()
+                        val totalHours = hours.toIntOrNull()
                         val categoryBackendKey = OpportunityCategory.fromLabel(selectedCategoryLabel)
                         Log.d("Asasas", "CreateOppScreen: $categoryBackendKey")
 
+                        // 1. التحقق من الحقول الفارغة
                         if (title.isBlank() || description.isBlank() || locationName.isBlank() || categoryBackendKey == null) {
                             Toast.makeText(context, fillFieldsErrorMsg, Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
+                        // 2. التحقق من أن تاريخ البداية يسبق تاريخ النهاية
+                        if (startDate >= endDate) {
+                            Toast.makeText(context, "تاريخ البداية يجب أن يكون قبل تاريخ النهاية", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
+
+                        // 3. التحقق من أن الموعد النهائي للتسجيل يسبق تاريخ البداية أو يساويه
+                        if (registrationDeadline > startDate) {
+                            Toast.makeText(context, "الموعد النهائي للتسجيل يجب أن يكون قبل أو يوافق تاريخ البداية", Toast.LENGTH_SHORT).show()
                             return@Button
                         }
 
@@ -365,7 +378,12 @@ fun CreateOppScreen(
                         .height(54.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = colorScheme.primary)
                 ) {
-                    Text(stringResource(R.string.publish_opportunity_button), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = colorScheme.onPrimary)
+                    Text(
+                        text = stringResource(R.string.publish_opportunity_button),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = colorScheme.onPrimary
+                    )
                 }
             }
         }
@@ -479,7 +497,6 @@ fun CreateOppScreenShimmer(modifier: Modifier = Modifier) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // شيمر زر النشر
         Box(
             modifier = Modifier
                 .fillMaxWidth()

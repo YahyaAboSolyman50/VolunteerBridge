@@ -130,19 +130,6 @@ class AttendanceViewModel : ViewModel() {
         }
     }
 
-    /**
-     * جلب تقرير ساعات الحضور الخاصة بالمتطوعين (Endpoints: /activities/volunteer-hours-report/)
-     */
-    fun fetchVolunteerHoursReport() {
-        viewModelScope.launch {
-            try {
-                val response = apiService.getVolunteerHoursReport()
-                if (response.isSuccessful && response.body() != null) {
-                    _attendanceReport.value = response.body()
-                }
-            } catch (e: Exception) {
-                // التعامل مع الخطأ
-            }
-        }
-    }
+
+
 }

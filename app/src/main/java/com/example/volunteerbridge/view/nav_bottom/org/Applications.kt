@@ -29,6 +29,10 @@ import com.example.volunteerbridge.viewmodelApi.NotViewModel
 import com.example.volunteerbridge.viewmodelApi.OrganizationViewModel
 import com.example.volunteerbridge.viewmodelApi.ParticipationViewModel
 
+/**
+ * شاشة إدارة طلبات الانضمام للفرص التطوعية الخاصة بالمنظمة (Applications Screen)
+ * تعرض الطلبات مقسمة حسب التبويبات (قيد الانتظار، مقبولة، مكتملة، مرفوضة) وتتيح قبولها أو رفضها مع إرسال إشعارات
+ */
 @Composable
 fun ApplicationsScreen(
     participationViewModel: ParticipationViewModel,
@@ -201,6 +205,10 @@ fun ApplicationsScreenDesign(
     }
 }
 
+/**
+ * بطاقة عرض طلب انضمام متطوع منفرد (ApplicantRequestCard)
+ * تعرض تفاصيل المتطوع وحالة الطلب وأزرار لاتخاذ الإجراءات (قبول/رفض)
+ */
 @Composable
 fun ApplicantRequestCard(
     app: ParticipationResponse,
@@ -393,32 +401,7 @@ fun ApplicantRequestCard(
                                 )
                             }
 
-                            Button(
-                                onClick = {
-                                    actionLoading = true
-                                    // افترض أن الـ ViewModel يحتوي على دالة completeParticipation
-                                    participationViewModel.completeParticipation(app.id) { success ->
-                                        actionLoading = false
-                                        if (success) {
-                                            notViewModel.sendNotification(
-                                                NotificationModel(
-                                                    receiverId = app.user,
-                                                    senderId = orgId,
-                                                    title = "إتمام الفرصة",
-                                                    message = "تهانينا، تم إتمام مشاركتك في فرصة ${app.activityTitle} بنجاح."
-                                                )
-                                            )
-                                        }
-                                    }
-                                },
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF2196F3),
-                                    contentColor = Color.White
-                                ),
-                                shape = RoundedCornerShape(12.dp)
-                            ) {
-                                Text("إتمام (Complete)", fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                            }
+
                         }
                     }
                 }

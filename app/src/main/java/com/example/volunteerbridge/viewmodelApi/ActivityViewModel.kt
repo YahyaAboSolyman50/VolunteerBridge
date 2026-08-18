@@ -28,6 +28,10 @@ class ActivityViewModel : ViewModel() {
     private val _myParticipationsIds = MutableStateFlow<Set<Int>>(emptySet())
     val myParticipationsIds: StateFlow<Set<Int>> = _myParticipationsIds.asStateFlow()
 
+    // 🌟 قائمة مشاركات الطالب الكاملة لفحص حالاتها (مقبول، قيد الانتظار، مرفوض، مكتمل)
+    private val _myParticipations = MutableStateFlow<List<ParticipationResponse>>(emptyList())
+    val myParticipations: StateFlow<List<ParticipationResponse>> = _myParticipations.asStateFlow()
+
     private val _selectedActivity = MutableStateFlow<ActivityResponse?>(null)
     val selectedActivity: StateFlow<ActivityResponse?> = _selectedActivity.asStateFlow()
 
@@ -56,6 +60,7 @@ class ActivityViewModel : ViewModel() {
 
     private val _isUpdating = MutableStateFlow(false)
     val isUpdating: StateFlow<Boolean> = _isUpdating.asStateFlow()
+
     /**
      * 1️⃣ جلب جميع الفرص في النظام وجلب مشاركات الطالب لتحديث حالة الزر
      */
@@ -63,8 +68,6 @@ class ActivityViewModel : ViewModel() {
         viewModelScope.launch {
             _isLoading.value = true
             try {
-
-
                 val response = apiService.getActivities()
 
                 if (response.isSuccessful) {
@@ -90,7 +93,7 @@ class ActivityViewModel : ViewModel() {
     }
 
     /**
-     * 🌟 دالة جلب أنشطة/مشاركات الطالب للتحقق مما إذا كان منضماً مسبقاً
+     * 🌟 دالة جلب أنشطة/مشاركات الطالب للتحقق من حالتها (معلقة، مقبولة، إلخ)
      */
     fun loadMyParticipations() {
         viewModelScope.launch {
@@ -99,9 +102,12 @@ class ActivityViewModel : ViewModel() {
 
                 if (response.isSuccessful) {
                     val participations = response.body() ?: emptyList()
+                    _myParticipations.value = participations
+
                     val ids = participations.map { it.activity }.toSet()
                     _myParticipationsIds.value = ids
-                    Log.d("ActivityVM", "تم جلب المشاركات بنجاح. معرفاتها: $ids")
+
+                    Log.d("ActivityVM", "تم جلب المشاركات بنجاح. العدد: ${participations.size}")
                 } else {
                     Log.e("ActivityVM", "فشل جلب المشاركات - الكود: ${response.code()}")
                 }
@@ -146,7 +152,7 @@ class ActivityViewModel : ViewModel() {
         viewModelScope.launch {
             _isCreating.value = true
             try {
-                val response = apiService.createActivity( request)
+                val response = apiService.createActivity(request)
 
                 if (response.isSuccessful) {
                     Log.d("ActivityVM", "تم إضافة الفرصة بنجاح!")
@@ -167,12 +173,12 @@ class ActivityViewModel : ViewModel() {
     /**
      * 4️⃣ 🌟 دالة الانضمام للفرصة (Quick Apply)
      */
-    fun joinActivity(activityId: Int,onSuccess: (Int) -> Unit) {
+    fun joinActivity(activityId: Int, onSuccess: (Int) -> Unit) {
         viewModelScope.launch {
             _selectedActivityId.value = activityId
             _isJoinLoading.value = true
             try {
-                val response = apiService.joinActivity( activityId)
+                val response = apiService.joinActivity(activityId)
 
                 if (response.isSuccessful) {
                     _joinStatus.value = true
@@ -245,7 +251,7 @@ class ActivityViewModel : ViewModel() {
     /**
      * 7️⃣ جلب تفاصيل نشاط واحد عبر المعرّف (ID)
      */
-    fun getActivityById( activityId: Int, onSuccess: (ActivityResponse) -> Unit = {}) {
+    fun getActivityById(activityId: Int, onSuccess: (ActivityResponse) -> Unit = {}) {
         viewModelScope.launch {
             _isLoading.value = true
             try {
@@ -268,6 +274,7 @@ class ActivityViewModel : ViewModel() {
             }
         }
     }
+
     /**
      * 8️⃣ تعديل فرصة قائمة (Update Activity) وإعادة جلب قائمة فرص المؤسسة فوراً
      */
@@ -279,13 +286,10 @@ class ActivityViewModel : ViewModel() {
         viewModelScope.launch {
             _isUpdating.value = true
             try {
-
-                // استدعاء دالة الـ API الخاصة بالتعديل (تأكد من مطابقة اسم الميثود في ApiService لديك)
-                val response = apiService.partialUpdateActivity( activityId, request)
+                val response = apiService.partialUpdateActivity(activityId, request)
 
                 if (response.isSuccessful) {
                     Log.d("ActivityVM", "تم تعديل الفرصة بنجاح!")
-                    // إعادة تحميل قائمة فرص المؤسسة لتحديث البيانات في الشاشة
                     onSuccess()
                 } else {
                     val errorBody = response.errorBody()?.string()
@@ -315,6 +319,7 @@ class ActivityViewModel : ViewModel() {
             "Bearer $cleanToken"
         }
     }
+
     /**
      * 9️⃣ جلب قائمة المشاركات/المتطوعين المرتبطين بفرصة محددة (عبر الـ Activity ID)
      */

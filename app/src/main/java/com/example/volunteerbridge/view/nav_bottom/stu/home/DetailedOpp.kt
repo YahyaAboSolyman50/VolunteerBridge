@@ -35,6 +35,7 @@ import com.example.volunteerbridge.viewmodelApi.NotViewModel
 import com.example.volunteerbridge.viewmodelApi.StudentViewModel
 import com.valentinilk.shimmer.shimmer
 
+// شاشة تفاصيل الفرصة التطوعية لعرض معلومات الفرصة وإتاحة إمكانية التقديم لها
 @Composable
 fun OpportunityDetailScreen(
     opportunityId: Int,
@@ -119,6 +120,7 @@ fun OpportunityDetailScreen(
     )
 }
 
+// التصميم التفصيلي لشاشة عرض الفرصة التطوعية
 @Composable
 private fun DetailedDesign(
     opp: ActivityResponse?,
@@ -314,8 +316,8 @@ private fun DetailedDesign(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
-                            val limit = opp.volunteerLimit ?: 0L
-                            val applicants = opp.applicantsCount ?: 0L
+                            val limit = opp.volunteerLimit ?: 0
+                            val applicants = opp.applicantsCount ?: 0
                             val seatsLeft = (limit - applicants).coerceAtLeast(0)
 
                             val seatsLabel = stringResource(R.string.label_seats_left)
@@ -409,6 +411,7 @@ private fun DetailedDesign(
     }
 }
 
+// بطاقة لعرض معلومة محددة مثل الموقع أو الساعات أو المقاعد المتاحة
 @Composable
 fun InfoCard(modifier: Modifier, label: String, value: String, icon: ImageVector) {
     Card(
@@ -426,6 +429,7 @@ fun InfoCard(modifier: Modifier, label: String, value: String, icon: ImageVector
     }
 }
 
+// عنصر لعنوان الأقسام المختلفة داخل شاشة التفاصيل
 @Composable
 fun SectionTitle(title: String) {
     Text(

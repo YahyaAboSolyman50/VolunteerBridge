@@ -24,6 +24,10 @@ import androidx.compose.ui.unit.sp
 import com.example.volunteerbridge.app.R
 import com.example.volunteerbridge.viewmodelApi.OrganizationViewModel
 
+/**
+ * شاشة ملف تعريف المنظمة (OrganizationProfileScreen)
+ * تعرض تفاصيل المنظمة مثل الاسم، البريد الإلكتروني، نوع المنظمة، رقم الهاتف، ورقم الرخصة، مع إمكانية تعديل الملف أو تسجيل الخروج.
+ */
 @Composable
 fun OrganizationProfileScreen(
     organizationViewModel: OrganizationViewModel,
@@ -171,6 +175,10 @@ fun OrganizationProfileScreen(
     }
 }
 
+/**
+ * قسم رأس الملف الشخصي (ProfileHeaderSection)
+ * يعرض صورة البروفايل، حالة التوثيق، اسم المنظمة، والبريد الإلكتروني.
+ */
 @Composable
 fun ProfileHeaderSection(name: String, email: String, isVerified: Boolean) {
     val colorScheme = MaterialTheme.colorScheme
@@ -237,6 +245,10 @@ fun ProfileHeaderSection(name: String, email: String, isVerified: Boolean) {
     }
 }
 
+/**
+ * صف المعلومات (InfoRow)
+ * عنصر مخصص لعرض أيقونة مع تسمية وقيمة ضمن تفاصيل المنظمة.
+ */
 @Composable
 fun InfoRow(icon: ImageVector, label: String, value: String) {
     val colorScheme = MaterialTheme.colorScheme

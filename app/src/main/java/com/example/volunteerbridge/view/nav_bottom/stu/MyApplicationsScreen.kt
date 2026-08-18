@@ -47,6 +47,7 @@ fun MyApplicationsScreen(
     token: String,
     activityViewModel: ActivityViewModel
 ) {
+    // مراقبة حالة الطلبات وحالة التحميل من الـ ViewModel
     val applications by viewModel.applications.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val colorScheme = MaterialTheme.colorScheme
@@ -115,6 +116,7 @@ fun MyApplicationsScreen(
             }
         },
         containerColor = colorScheme.background
+        // محتوى الشاشة الرئيسي داخل الـ Scaffold
     ) { paddingValues ->
         Box(
             modifier = Modifier
@@ -211,6 +213,7 @@ fun ApplicationCard(
     val colorScheme = MaterialTheme.colorScheme
     val status = application.status.lowercase()
 
+    // تعريف المتغيرات المنطقية لتحديد حالة الطلب الحالية
     val isPending = status == "pending"
     val isAccepted = status == "accepted" || status == "approved"
     val isCompleted = status == "completed" || status == "finished"
@@ -285,6 +288,7 @@ fun ApplicationCard(
 
                 Spacer(modifier = Modifier.width(12.dp))
 
+                // عرض عنوان النشاط وتاريخ التقديم
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = application.activityTitle,

@@ -27,19 +27,15 @@ fun NotificationScreenStu(
     val studentModel by studentViewModel.currentUserData
     val context = LocalContext.current
 
-    // جلب حالة التحميل الحقيقية من الـ ViewModel
     val isLoading by notViewModel.isLoading
 
+    // مراقبة تحديث بيانات الطالب وجلب إشعاراته فور توفر الـ ID الصحيح
     LaunchedEffect(studentModel) {
         val studentId = studentModel?.id
         if (studentId != null && studentId != 0) {
-            Log.d("Aaaaa", "NotificationScreenStu: no null")
             notViewModel.fetchNotifications(studentId)
         } else {
-            Log.d("Aaaaa", "NotificationScreenStu: no null")
-
-            // إذا لم يكن المعرف متوفراً بعد، نوقف التحميل مؤقتاً أو نمرر 0
-            notViewModel.fetchNotifications(0)
+            Toast.makeText(context,"Not found notification", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -64,22 +60,22 @@ fun NotificationScreenStu(
                         }
                     },
                     hasNotifications = notifications.any { !it.isRead }
-                ){
+                ) {
                     navController.popBackStack()
                 }
             }
 
-            // عرض تأثيرات الـ Shimmer فقط أثناء جلب البيانات لأول مرة
+            // عرض تأثيرات الـ Shimmer أثناء التحميل
             if (isLoading) {
                 items(5) {
                     EmptyNotifications()
                 }
             }
-            // إذا انتهى التحميل ولم تكن هناك إشعارات، اعرض رسالة "لا توجد إشعارات"
+            // إذا انتهى التحميل ولم تكن هناك إشعارات
             else if (notifications.isEmpty()) {
                 item { EmptyNotifications() }
             }
-            // عرض قائمة الإشعارات في حال توفرها
+            // عرض قائمة الإشعارات
             else {
                 items(notifications) { notification ->
                     NotificationCard(

@@ -1,6 +1,7 @@
 package com.example.volunteerbridge.view.nav_bottom.stu.home
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -76,7 +77,9 @@ fun StudentHomeDesign(
 
     // استرجاع بيانات المستخدم والرمز التعريفي
     val userProfile by studentViewModel.currentUserData
-    val studentToken = authViewModelApi.getSavedToken() ?: "YOUR_TOKEN"
+    Log.d("aaaaa", "StudentHomeDesign: ${userProfile?.remainingHours}")
+    Log.d("aaaaa", "StudentHomeDesign: ${userProfile?.totalCompletedHours}")
+    Log.d("aaaaa", "StudentHomeDesign: ${userProfile?.requiredHours}")
 
     // مراقبة حالات الأنشطة والتحميل
     val activityList by activityViewModel.activities.collectAsState(initial = emptyList())
@@ -90,7 +93,7 @@ fun StudentHomeDesign(
     val progressPercentageString = userProfile?.completionPercentage?.replace("%", "")?.trim() ?: "0"
     val progressValue = (progressPercentageString.toFloatOrNull() ?: 0f) / 100f
 
-    // تحميل الأنشطة عند فتح الشاشة لأول مرة
+    // تحميل الأنشطة والمشاركات الخاصة بالطالب عند فتح الشاشة لأول مرة لفحص حالات الطلبات
     LaunchedEffect(Unit) {
         activityViewModel.loadMyParticipations()
         activityViewModel.loadActivities()
@@ -162,7 +165,7 @@ fun StudentHomeDesign(
                                     .size(42.dp)
                                     .clip(CircleShape)
                                     .clickable {
-                                        navController.navigate(SubClasses.SubClassesOrg.Notification.route)
+                                        navController.navigate(SubClasses.SubClassesStu.Notification.route)
                                     }
                                     .background(MaterialTheme.colorScheme.surfaceVariant)
                                     .padding(8.dp),
@@ -305,6 +308,7 @@ fun StudentHomeDesign(
                                     opp = opp,
                                     isThisButtonLoading = isThisCardLoading,
                                     activityViewModel = activityViewModel,
+                                    currentUserHours = currentHours, // تمرير الساعات الحالية للطالب
                                     onCardClick = { id ->
                                         activityViewModel.selectActivity(opp)
                                         navController.navigate("${SubClasses.SubClassesStu.OppDetail.route}/$id")
@@ -365,7 +369,7 @@ fun StudentHomeDesign(
 }
 
 /**
- * تصميم البطاقة الخاصة بكل فرصة تطوعية مع إدارة حالات زر الانضمام.
+ * تصميم البطاقة الخاصة بكل فرصة تطوعية مع إدارة حالات زر الانضمام والتحقق من الحد الأقصى للساعات وسجل المشاركات السابق.
  */
 @Composable
 fun OpportunityCard(
@@ -374,24 +378,53 @@ fun OpportunityCard(
     onCardClick: (Int) -> Unit,
     onApplyClick: () -> Unit,
     activityViewModel: ActivityViewModel,
+    currentUserHours: Int,
     context: Context
 ) {
+    // 1. جلب قائمة المشاركات الكاملة للطالب من الـ ViewModel ومُعرفاتها
+    val myParticipations by activityViewModel.myParticipations.collectAsState()
     val myJoinedIds by activityViewModel.myParticipationsIds.collectAsState()
 
-    val hasActiveParticipation = myJoinedIds.isNotEmpty()
+    // 2. التحقق مما إذا كان الطالب منضمًا لهذه الفرصة حالياً (بشكل نشط)
     val isAlreadyJoined = opp.id?.let { myJoinedIds.contains(it) } ?: false
+
+    // 3. التحقق مما إذا كان الطالب قد شارك في هذه الفرصة مسبقاً تاريخياً
+    val hasParticipatedBefore = myParticipations.any { participation ->
+        // تحقق مما إذا كانت مشاركة مرتبطة بنفس معرف النشاط (سواء كان مخزناً كـ Int مباشر أو ككائن)
+        val partActivityId = participation.activity
+        partActivityId == opp.id
+    }
+
+    // 4. التحقق هل يوجد أي طلب سابق بحالة "قيد الانتظار" أو "مقبول" في فرص أخرى
+    val hasActiveOrPendingApplication = myParticipations.any { participation ->
+        val status = participation.status?.trim()
+        status.equals("Pending", ignoreCase = true) ||
+                status.equals("Accepted", ignoreCase = true) ||
+                status.equals("Approved", ignoreCase = true)
+    }
+
+    // 5. فحص الحد الأقصى للساعات (150 ساعة)
+    val maxAllowedHours = 150
+    val hasExceededMaxHours = currentUserHours >= maxAllowedHours
+
+    // استخراج عدد ساعات الفرصة الحالية (مع افتراض وجود حقل hours أو نقوم بتقديره، أو تعيينه من الكائن إن وجد)
+    val activityHours = opp.hours ?: 0
+    val wouldExceedHours = (currentUserHours + activityHours) > maxAllowedHours
 
     val detailedStatus = opp.status?.trim() ?: ""
     val isActive = detailedStatus.equals("Active", ignoreCase = true) ||
             detailedStatus.equals("Open", ignoreCase = true)
 
-    val canApply = isActive && !isAlreadyJoined && !hasActiveParticipation
+    // 6. شروط إمكانية التسجيل (الفرصة نشطة + لم يشارك فيها نهائياً من قبل + لم يتجاوز 150 ساعة + ليس لديه طلب معلق حالي)
+    val canApply = isActive && !hasParticipatedBefore && !hasExceededMaxHours && !wouldExceedHours && !hasActiveOrPendingApplication
     val isButtonEnabled = canApply && !isThisButtonLoading
 
+    // 7. تحديد النص المناسب للزر بناءً على الحالة الدقيقة بالترتيب الأولوية
     val buttonText = when {
         !isActive -> stringResource(R.string.applications_closed)
-        isAlreadyJoined -> stringResource(R.string.already_joined)
-        hasActiveParticipation -> stringResource(R.string.already_enrolled_another)
+        hasParticipatedBefore -> "مشارِك سابقاً" // أو استبدالها بنص من Strings.xml
+        hasExceededMaxHours || wouldExceedHours -> "تجاوزت الحد الأقصى (150 ساعة)"
+        hasActiveOrPendingApplication -> stringResource(R.string.already_enrolled_another)
         else -> stringResource(R.string.quick_apply)
     }
 
@@ -511,6 +544,7 @@ fun OpportunityCard(
                         }
                     }
 
+                    // طبقة فوق الزر لإظهار رسائل Toast توضيحية عند النقر عليه وهو معطل
                     if (!isButtonEnabled && !isThisButtonLoading) {
                         Box(
                             modifier = Modifier
@@ -524,14 +558,21 @@ fun OpportunityCard(
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }
-                                        isAlreadyJoined -> {
+                                        hasParticipatedBefore -> {
                                             Toast.makeText(
                                                 context,
-                                                context.getString(R.string.already_joined_toast),
+                                                "لقد قمت بالمشاركة في هذه الفرصة مسبقاً ولا يمكنك التسجيل بها مرة أخرى.",
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                         }
-                                        hasActiveParticipation -> {
+                                        hasExceededMaxHours || wouldExceedHours -> {
+                                            Toast.makeText(
+                                                context,
+                                                "عذراً، لا يمكنك تجاوز الحد الأقصى لساعات التطوع وهو 150 ساعة.",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                        hasActiveOrPendingApplication -> {
                                             Toast.makeText(
                                                 context,
                                                 context.getString(R.string.cannot_join_multiple_toast),

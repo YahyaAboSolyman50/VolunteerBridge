@@ -15,7 +15,7 @@ object RetrofitClient {
 
     private val client by lazy {
         OkHttpClient.Builder()
-            // إضافة التوكن تلقائياً لكل طلب عبر Interceptor بسيط وآمن تماماً
+            // إضافة التوكن تلقائياً لكل طلب عبر Interceptor
             .addInterceptor(Interceptor { chain ->
                 val originalRequest = chain.request()
                 val token = TokenManager.getToken()

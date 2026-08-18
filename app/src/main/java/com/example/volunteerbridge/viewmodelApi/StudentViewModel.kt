@@ -13,7 +13,7 @@ class StudentViewModel : ViewModel() {
 
     private val apiService = RetrofitClient.apiService
 
-    // 🎓 بيانات ملف الطالب الشخصي
+    //  بيانات ملف الطالب الشخصي
     val currentUserData = mutableStateOf<UserProfileResponse?>(null)
 
     // ⏳ حالة التحميل

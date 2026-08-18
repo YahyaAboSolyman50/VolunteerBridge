@@ -25,6 +25,14 @@ class AdminViewModelApi(application: Application) : AndroidViewModel(application
     private val _pendingOrganizations = mutableStateOf<List<OrganizationResponse>>(emptyList())
     val pendingOrganizations: State<List<OrganizationResponse>> = _pendingOrganizations
 
+    // قائمة الأنشطة
+    private val _activities = mutableStateOf<List<com.example.volunteerbridge.data.model.response.ActivityResponse>>(emptyList())
+    val activities: State<List<com.example.volunteerbridge.data.model.response.ActivityResponse>> = _activities
+
+    // قائمة التقارير (تعديل النوع هنا ليطابق GenericReportResponse)
+    private val _reports = mutableStateOf<List<com.example.volunteerbridge.data.model.response.GenericReportResponse>>(emptyList())
+    val reports: State<List<com.example.volunteerbridge.data.model.response.GenericReportResponse>> = _reports
+
     // حالة الواجهة (Loading, Success, Error)
     private val _adminUiState = MutableStateFlow<UiState<String>>(UiState.Idle)
     val adminUiState: StateFlow<UiState<String>> = _adminUiState.asStateFlow()
@@ -72,14 +80,13 @@ class AdminViewModelApi(application: Application) : AndroidViewModel(application
             val token = getToken()
 
             if (token == null) {
-                _adminUiState.value = UiState.Error("غير مصرح: يرجى إعادات تسجيل الدخول")
+                _adminUiState.value = UiState.Error("غير مصرح: يرجى إعادة تسجيل الدخول")
                 return@launch
             }
 
             try {
                 val response = apiService.approveOrganization(orgId)
                 if (response.isSuccessful) {
-                    // حذف المؤسسة المعنية من القائمة المحلية فور الاعتماد
                     _pendingOrganizations.value = _pendingOrganizations.value.filter {
                         it.id != orgId
                     }
@@ -110,7 +117,6 @@ class AdminViewModelApi(application: Application) : AndroidViewModel(application
             try {
                 val response = apiService.rejectOrganization(orgId)
                 if (response.isSuccessful) {
-                    // حذف المؤسسة من القائمة المحلية فور الرفض
                     _pendingOrganizations.value = _pendingOrganizations.value.filter {
                         it.id != orgId
                     }
@@ -118,6 +124,46 @@ class AdminViewModelApi(application: Application) : AndroidViewModel(application
                 } else {
                     val errorMsg = response.errorBody()?.string() ?: "فشل في رفض الطلب"
                     _adminUiState.value = UiState.Error("خطأ ${response.code()}: $errorMsg")
+                }
+            } catch (e: Exception) {
+                _adminUiState.value = UiState.Error(e.localizedMessage ?: "حدث خطأ بالشبكة")
+            }
+        }
+    }
+
+    /**
+     * 4️⃣ جلب قائمة الأنشطة (Admin Activities)
+     */
+    fun fetchActivities() {
+        viewModelScope.launch {
+            _adminUiState.value = UiState.Loading
+            try {
+                val response = apiService.getActivities()
+                if (response.isSuccessful && response.body() != null) {
+                    _activities.value = response.body()!!
+                    _adminUiState.value = UiState.Idle
+                } else {
+                    _adminUiState.value = UiState.Error("فشل في جلب الأنشطة")
+                }
+            } catch (e: Exception) {
+                _adminUiState.value = UiState.Error(e.localizedMessage ?: "حدث خطأ بالشبكة")
+            }
+        }
+    }
+
+    /**
+     * 5️⃣ جلب التقارير والإحصائيات
+     */
+    fun fetchReports() {
+        viewModelScope.launch {
+            _adminUiState.value = UiState.Loading
+            try {
+                val response = apiService.getVolunteerHoursReport()
+                if (response.isSuccessful && response.body() != null) {
+                    _reports.value = response.body()!!
+                    _adminUiState.value = UiState.Idle
+                } else {
+                    _adminUiState.value = UiState.Error("فشل في جلب التقارير")
                 }
             } catch (e: Exception) {
                 _adminUiState.value = UiState.Error(e.localizedMessage ?: "حدث خطأ بالشبكة")

@@ -55,7 +55,7 @@ interface VolunteerBridgeApiService {
     suspend fun getOrganizationsReport(): Response<GenericReportResponse>
 
     @GET("activities/volunteer-hours-report/")
-    suspend fun getVolunteerHoursReport(): Response<GenericReportResponse>
+    suspend fun getVolunteerHoursReport(): Response<List<GenericReportResponse>>
 
     @GET("activities/{id}/")
     suspend fun getActivityById(
@@ -109,7 +109,8 @@ interface VolunteerBridgeApiService {
 
     @POST("activities/participations/{id}/complete/")
     suspend fun completeParticipation(
-        @Path("id") participationId: Int
+        @Path("id") participationId: Int,
+        @Body body: Map<String, Int>
     ): Response<okhttp3.ResponseBody>
 
     // ==========================================

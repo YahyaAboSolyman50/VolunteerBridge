@@ -37,7 +37,7 @@ sealed class Destination(
 sealed class SubClasses(val route: String) {
     sealed class SubClassesStu(route: String) : SubClasses(route) {
         object OppDetail : SubClasses("opp_detail")
-        object Notification : SubClassesStu("notification")
+        object Notification : SubClassesStu("stu_not")
     }
     sealed class SubClassesOrg(route: String) : SubClasses(route) {
         object Notification : SubClassesOrg("org_not")

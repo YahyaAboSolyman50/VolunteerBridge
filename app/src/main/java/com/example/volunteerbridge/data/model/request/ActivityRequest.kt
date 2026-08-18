@@ -10,7 +10,7 @@ data class ActivityRequest(
     @SerializedName("start_date") val startDate: String? = null,              // YYYY-MM-DD
     @SerializedName("end_date") val endDate: String? = null,                  // YYYY-MM-DD
     @SerializedName("registration_deadline") val registrationDeadline: String? = null, // YYYY-MM-DD
-    @SerializedName("volunteer_limit") val volunteerLimit: Long? = null,      // تم تعديلها لتطابق الـ Swagger (Integer/Long)
+    @SerializedName("volunteer_limit") val volunteerLimit: Int? = null,      // تم تعديلها لتطابق الـ Swagger (Integer/Long)
     @SerializedName("status") val status: String? = "active",
-    @SerializedName("hours") val hours: Long? = null
+    @SerializedName("hours") val hours: Int? = null
 )

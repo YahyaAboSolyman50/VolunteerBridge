@@ -28,16 +28,16 @@ data class ActivityResponse(
     val registrationDeadline: String? = null,
 
     @SerializedName("volunteer_limit")
-    val volunteerLimit: Long? = null,
+    val volunteerLimit: Int? = null,
 
     @SerializedName("applicants_count")
-    val applicantsCount: Long? = null,
+    val applicantsCount: Int? = null,
 
     @SerializedName("status")
     val status: String? = null,
 
     @SerializedName("hours")
-    val hours: Long? = null,
+    val hours: Int? = null,
 
     @SerializedName("created_at")
     val createdAt: String? = null,

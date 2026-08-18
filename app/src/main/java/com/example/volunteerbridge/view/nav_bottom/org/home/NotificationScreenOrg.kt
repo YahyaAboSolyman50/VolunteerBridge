@@ -1,5 +1,6 @@
 package com.example.volunteerbridge.view.nav_bottom.org.home
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -29,6 +30,7 @@ fun NotificationScreenOrg(
 
     // استخدام حالة التحميل الحقيقية من الـ ViewModel
     val isLoading by notViewModel.isLoading
+    Log.d("Aaaaa", "NotificationScreenStu - Fetching for Student ID: ${orgModel?.id ?: 0} ?: 0")
 
     LaunchedEffect(orgModel?.id) {
         val orgId = orgModel?.id

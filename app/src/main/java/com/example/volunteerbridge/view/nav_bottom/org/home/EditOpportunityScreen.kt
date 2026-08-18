@@ -261,9 +261,9 @@ fun EditOpportunityScreen(
                             startDate = startDate.ifBlank { null },
                             endDate = endDate.ifBlank { null },
                             registrationDeadline = registrationDeadline.ifBlank { null },
-                            volunteerLimit = volunteerLimit.toLongOrNull(),
+                            volunteerLimit = volunteerLimit.toIntOrNull(),
                             status = status.ifBlank { "active" },
-                            hours = hours.toLongOrNull()
+                            hours = hours.toIntOrNull()
                         )
 
                         activityViewModel.updateActivity(activityId, request) {

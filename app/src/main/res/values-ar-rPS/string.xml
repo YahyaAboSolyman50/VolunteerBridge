@@ -1,14 +1,14 @@
 <resources>
-    <!-- General & App Info -->
-    <string name="app_name">جسور التطوع</string>
-    <string name="description_app">منصة رقمية لتنظيم العمل التطوعي تحت إشراف الجامعة الإسلامية بغزة</string>
+    <!-- التطبيق والترحيب -->
+    <string name="app_name">جسر التطوع</string>
+    <string name="description_app">جسر التطوع\nمنصة رقمية لتنظيم العمل التطوعي تحت إشراف الجامعة الإسلامية بغزة</string>
 
     <string name="start_now">ابدأ الآن</string>
     <string name="next">التالي</string>
-    <string name="page_2">تم إنشاء هذا التطبيق بواسطة طلاب الجامعة الإسلامية بغزة</string>
-    <string name="page_3">ابدأ بالبحث عن فرصتك التطوعية المناسبة</string>
+    <string name="page_2">تم إنتاج هذا التطبيق بواسطة طلاب الجامعة الإسلامية بغزة</string>
+    <string name="page_3">ابدأ في البحث عن فرصتك للتطوع</string>
 
-    <!-- Auth & Login -->
+    <!-- المصادقة وإنشاء الحساب -->
     <string name="name">اسم المؤسسة</string>
     <string name="password">كلمة المرور</string>
     <string name="email">البريد الإلكتروني</string>
@@ -18,7 +18,7 @@
     <string name="HavaAccount">ليس لديك حساب؟</string>
     <string name="signup">إنشاء حساب</string>
     <string name="create">أنشئ حساب مؤسستك</string>
-    <string name="license_num">رقم الرخصة : 0000 / 2024</string>
+    <string name="license_num">رقم الترخيص: 0000 / 2024</string>
     <string name="confirm_password">تأكيد كلمة المرور</string>
     <string name="phone">رقم الهاتف</string>
     <string name="selectOrg">اختر المؤسسة</string>
@@ -26,19 +26,19 @@
     <string name="savedData">جاري إنشاء الحساب وحفظ البيانات…</string>
     <string name="verification">سيتم التحقق من حسابك بواسطة إدارة الجامعة.</string>
 
-    <!-- Validation Errors -->
-    <string name="err_fill">يرجى تعبئة جميع الحقول المطلوبة</string>
+    <!-- رسائل الأخطاء -->
+    <string name="err_fill">يرجى تعبئة كافة الحقول المطلوبة</string>
     <string name="err_name_req">اسم المؤسسة مطلوب</string>
     <string name="err_email_invalid">يرجى إدخال بريد إلكتروني صالح</string>
-    <string name="err_license_req">رقم الرخصة الرسمية مطلوب</string>
+    <string name="err_license_req">رقم الترخيص الرسمي مطلوب</string>
     <string name="err_phone_req">رقم الهاتف مطلوب</string>
     <string name="err_phone_format">التنسيق: 059XXXXXXX أو 056XXXXXXX</string>
-    <string name="err_pass_short">كلمة المرور يجب أن تكون 8 أحرف على الأقل</string>
-    <string name="err_pass_digit">كلمة المرور يجب أن تحتوي على رقم واحد على الأقل</string>
-    <string name="err_pass_upper">كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل</string>
+    <string name="err_pass_short">يجب أن تكون كلمة المرور 8 أحرف على الأقل</string>
+    <string name="err_pass_digit">يجب أن تحتوي كلمة المرور على رقم واحد على الأقل</string>
+    <string name="err_pass_upper">يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل</string>
     <string name="err_pass_match">كلمتا المرور غير متطابقتين</string>
 
-    <!-- Student Home & Dashboard -->
+    <!-- العناوين وساعات التطوع العامة -->
     <string name="TotalHours">"إجمالي ساعات التطوع الخاصة بك: "</string>
     <string name="hour">0 ساعة</string>
     <string name="manageOpp">إدارة الفرص</string>
@@ -47,84 +47,85 @@
     <string name="DetailOpp">تفاصيل الفرصة</string>
     <string name="app">طلبات المتقدمين</string>
 
+    <!-- واجهة الترحيب العامة -->
     <string name="welcome_message">أهلاً بك، %1$s!</string>
     <string name="welcome_default">أهلاً بك!</string>
-    <string name="ready_to_impact">هل أنت مستعد لصنع أثر اليوم؟</string>
+    <string name="ready_to_impact">هل أنت مستعد لصنع تأثير اليوم؟</string>
     <string name="total_volunteer_hours">إجمالي ساعات التطوع</string>
     <string name="hours_unit">%1$d ساعة</string>
     <string name="search_opportunity_hint">ابحث عن فرصة تطوعية...</string>
     <string name="available_opportunities">الفرص المتاحة</string>
 
-    <!-- All Opportunities -->
+    <!-- شاشة جميع الفرص -->
     <string name="all_opportunities">جميع الفرص</string>
     <string name="search_all_opportunities">البحث في جميع الفرص...</string>
 
-    <!-- Filters -->
+    <!-- المرشحات (Filters) -->
     <string name="filter_status">الحالة</string>
     <string name="filter_type">النوع</string>
-    <string name="filter_category">الفئة</string>
+    <string name="filter_category">التصنيف</string>
 
-    <!-- States & Messages -->
-    <string name="no_opportunities_found">لا توجد فرص تطابق الفلاتر المحددة.</string>
+    <!-- الحالات والرسائل -->
+    <string name="no_opportunities_found">لم يتم العثور على فرص تطابق خيارات البحث.</string>
     <string name="data_updated_successfully">تم تحديث البيانات بنجاح</string>
     <string name="successfully_joined_opportunity">تم الانضمام إلى الفرصة بنجاح!</string>
     <string name="new_join_request">طلب انضمام جديد</string>
-    <string name="student_joined_opportunity_msg">قام طالب بالانضمام إلى فرصتك التطوعية: %1$s</string>
+    <string name="student_joined_opportunity_msg">انضم طالب إلى فرصتك التطوعية: %1$s</string>
     <string name="notification_sent_to_org">تم إرسال الإشعار إلى المؤسسة</string>
     <string name="failed_to_send_notification">فشل إرسال الإشعار</string>
 
-    <!-- Button & Card States -->
-    <string name="applications_closed">التقديم مغلق</string>
+    <!-- حالات الأزرار والبطاقات -->
+    <string name="applications_closed">التسجيل مغلق</string>
     <string name="already_joined">تم الانضمام مسبقاً</string>
     <string name="already_enrolled_another">مسجل بالفعل في فرصة أخرى</string>
-    <string name="quick_apply">تقديم سريع</string>
+    <string name="quick_apply">التسجيل السريع</string>
     <string name="general_category">عام</string>
     <string name="closed_status">مغلق</string>
-    <string name="organization_prefix">المؤسسة #%1$s</string>
+    <string name="organization_prefix">مؤسسة #%1$s</string>
 
-    <!-- Toast Warnings -->
+    <!-- تنبيهات الـ Toast -->
     <string name="opportunity_closed_toast">عذراً، هذه الفرصة التطوعية مغلقة حالياً</string>
     <string name="already_joined_toast">أنت مسجل بالفعل في هذه الفرصة</string>
     <string name="cannot_join_multiple_toast">لا يمكنك الانضمام لأكثر من فرصة تطوعية في نفس الوقت</string>
 
-    <!-- My Applications Screen -->
+    <!-- شاشة طلباتي -->
     <string name="my_applications">طلباتي</string>
     <string name="tab_pending">قيد الانتظار</string>
     <string name="tab_approved">المقبولة</string>
     <string name="tab_completed">المكتملة</string>
     <string name="tab_rejected">المرفوضة</string>
-    <string name="no_applications_found">لا توجد طلبات %1$s.</string>
+    <string name="no_applications_found">لا توجد طلبات تطابق (%1$s).</string>
     <string name="joined_at_prefix">تاريخ الانضمام: %1$s</string>
     <string name="cancel_button">إلغاء</string>
     <string name="application_canceled_success">تم إلغاء الطلب بنجاح</string>
     <string name="application_canceled_failure">فشل إلغاء الطلب</string>
 
-    <!-- Student Profile Screen -->
+    <!-- ملف الطالب الشخصي -->
     <string name="my_profile">الملف الشخصي</string>
     <string name="loading_text">جاري التحميل...</string>
     <string name="volunteer_student_badge">طالب متطوع</string>
-    <string name="volunteer_badges_and_progress">شارات التطوع والتقدم</string>
-    <string name="hours_completed_format">%1$.0f / %2$d ساعات مكتملة</string>
+    <string name="volunteer_badges_and_progress">شارات ومستوى التطوع</string>
+    <string name="hours_completed_format">%1$.0f / %2$d ساعة مكتملة</string>
     <string name="university_id">الرقم الجامعي</string>
     <string name="email_address">البريد الإلكتروني</string>
-    <string name="institution_name">المؤسسة التعليمية</string>
+    <string name="institution_name">الجامعة / المؤسسة</string>
     <string name="islamic_university_of_gaza">الجامعة الإسلامية بغزة</string>
     <string name="sign_out">تسجيل الخروج</string>
     <string name="viewAll">عرض الكل</string>
 
-    <!-- Edit / Create Opportunity Screens -->
+    <!-- تعديل الفرصة -->
     <string name="edit_opportunity_title">تعديل الفرصة</string>
     <string name="system_info_read_only">معلومات النظام (للقراءة فقط)</string>
-    <string name="activity_id_label">معرّف النشاط</string>
+    <string name="activity_id_label">رقم النشاط</string>
     <string name="status_label">الحالة</string>
     <string name="general_details_label">التفاصيل العامة</string>
     <string name="title_label">العنوان</string>
-    <string name="category_label">الفئة</string>
+    <string name="category_label">التصنيف</string>
     <string name="location_label">الموقع</string>
-    <string name="schedule_deadlines_label">الجدول الزمني والمواعيد النهائية</string>
-    <string name="start_date_label">تاريخ البدء</string>
-    <string name="end_date_label">تاريخ الانتهاء</string>
-    <string name="registration_deadline_label">الموعد النهائي للتهيئة والتسجيل</string>
+    <string name="schedule_deadlines_label">الجدول والمواعيد النهائية</string>
+    <string name="start_date_label">تاريخ البداية</string>
+    <string name="end_date_label">تاريخ النهاية</string>
+    <string name="registration_deadline_label">الموعد النهائي للتسجيل</string>
     <string name="volunteer_limit_label">الحد الأقصى للمتطوعين</string>
     <string name="hours_label">الساعات</string>
     <string name="description_label">الوصف</string>
@@ -134,80 +135,89 @@
     <string name="select_date">اختر التاريخ</string>
     <string name="back">رجوع</string>
 
+    <!-- إحصائيات المؤسسة ولوحة التحكم -->
     <string name="organization_default_name">المؤسسة</string>
     <string name="stat_active_ops">الفرص النشطة</string>
     <string name="stat_applicants">المتقدمون</string>
-    <string name="top_performing_title">الأكثر تفوقاً</string>
+    <string name="top_performing_title">الأكثر تفاعلاً</string>
     <string name="recent_activity_title">النشاط الأخير</string>
     <string name="view_all">عرض الكل</string>
-    <string name="hello_user_greeting">أهلاً، %s 👋</string>
-    <string name="status_verified_org">مؤسسة معتمدة</string>
-    <string name="status_pending_verification">في انتظار التحقق</string>
+    <string name="hello_user_greeting">أهلاً بك، %s 👋</string>
+    <string name="status_verified_org">مؤسسة موثقة</string>
+    <string name="status_pending_verification">في انتظار التوثيق</string>
     <string name="no_opportunities_posted">لم يتم نشر أي فرص بعد</string>
     <string name="status_active_label">نشط</string>
-    <string name="no_recent_activity">لا يوجد نشاط حديث حتى الآن</string>
+    <string name="no_recent_activity">لا يوجد نشاط حديث بعد</string>
 
+    <!-- إدارة المتطوعين -->
     <string name="manage_volunteers_title">إدارة المتطوعين</string>
     <string name="no_active_volunteers_yet">لا يوجد متطوعون نشطون في هذه الفرصة حتى الآن.</string>
-    <string name="finalize_all_for_everyone">إنهاء واعتماد الكل للجميع</string>
+    <string name="finalize_all_for_everyone">اعتماد الكل للجميع</string>
     <string name="volunteer_hours_report_summary">ملخص تقرير ساعات التطوع</string>
-    <string name="total_records_up_to_date">جميع السجلات محدثة.</string>
+    <string name="total_records_up_to_date">السجلات محدثة بالكامل.</string>
     <string name="done_added_toast">تمت الإضافة بنجاح</string>
     <string name="status_working">قيد العمل</string>
-    <string name="volunteer_name_format">المتطوع: %s</string>
+    <string name="volunteer_name_format">المتطوع %s</string>
     <string name="status_format">الحالة: %s</string>
     <string name="hrs_reward_format">%d ساعات مكافأة</string>
-    <string name="finalize_and_credit">إنهاء الاعتماد وإضافة الساعات</string>
+    <string name="finalize_and_credit">اعتماد وإضافة الساعات</string>
 
-    <string name="error_org_id_not_found">خطأ: لم يتم العثور على معرّف المؤسسة!</string>
-    <string name="all_notifications_marked_read">تم تحديد كافة الإشعارات كمقروءة</string>
-    <string name="cannot_update_notifications_missing_id">لا يمكن تحديث الإشعارات: المعرّف مفقود</string>
-    <string name="invalid_notification_id">معرّف الإشعار غير صالح</string>
+    <!-- الإشعارات والأخطاء -->
+    <string name="error_org_id_not_found">خطأ: لم يتم العثور على رقم المؤسسة!</string>
+    <string name="all_notifications_marked_read">تم تحديد جميع الإشعارات كمقروءة</string>
+    <string name="cannot_update_notifications_missing_id">تعذر تحديث الإشعارات: الرقم المعرف مفقود</string>
+    <string name="invalid_notification_id">رقم الإشعار غير صالح</string>
 
+    <!-- تفاصيل الفرصة -->
     <string name="manage_opportunity">إدارة الفرصة</string>
-    <string name="category">الفئة</string>
+    <string name="category">التصنيف</string>
     <string name="not_set">غير محدد</string>
-    <string name="view_all_applicants_count">عرض جميع المتقدمين (%d)</string>
+    <string name="view_all_applicants_count">عرض كل المتقدمين (%d)</string>
     <string name="status_active">● نشط</string>
     <string name="status_closed">● مغلق</string>
     <string name="recent_title">الأحدث</string>
-    <string name="no_applicants_yet">لا توجد طلبات متقدمين حتى الآن</string>
+    <string name="no_applicants_yet">لا يوجد متقدمون بعد</string>
     <string name="reserved_slots_label">المقاعد المحجوزة</string>
     <string name="remaining_slots_label">المقاعد المتبقية</string>
 
-    <string name="manage_opportunities_title">إدارة الفرص</string>
+    <!-- إدارة الفرص -->
+    <string name="manage_opportunities_title">إدارة الفرص التطوعية</string>
     <string name="back_content_description">رجوع</string>
     <string name="add_opportunity_content_description">إضافة فرصة</string>
     <string name="edit_button">تعديل</string>
     <string name="details_button">التفاصيل</string>
 
+    <!-- إنشاء فرصة -->
     <string name="create_opportunity_title">إضافة فرصة تطوعية جديدة</string>
     <string name="basic_information">المعلومات الأساسية</string>
     <string name="opportunity_title_label">عنوان الفرصة</string>
     <string name="detailed_description_label">الوصف التفصيلي</string>
-    <string name="select_category">اختر الفئة</string>
+    <string name="select_category">اختر التصنيف</string>
     <string name="location_hours_limit_section">الموقع، الساعات، والحد الأقصى</string>
     <string name="location_address_label">الموقع / العنوان</string>
     <string name="volunteer_hours_label">ساعات التطوع</string>
     <string name="dates_and_status_section">التواريخ والحالة</string>
-    <string name="fill_all_fields_error">يرجى تعبئة جميع الحقول المطلوبة واختيار الفئة</string>
-    <string name="opportunity_published_success">تم نشر الفرصة التطوعية بنجاح!</string>
+    <string name="fill_all_fields_error">يرجى تعبئة جميع الحقول المطلوبة واختيار التصنيف</string>
+    <string name="opportunity_published_success">تم نشر الفرصة بنجاح!</string>
     <string name="publish_opportunity_button">نشر الفرصة الآن</string>
 
+    <!-- لافتة التحقق -->
     <string name="lock_icon_desc">أيقونة القفل</string>
     <string name="verification_required_title">التحقق من الحساب مطلوب</string>
-    <string name="verification_required_desc">يجب عليك التحقق من حساب مؤسستك للوصول إلى ميزات الإدارة ونشر فرص تطوعية جديدة.</string>
-    <string name="verify_my_account_button">تحقق من حسابي الآن</string>
+    <string name="verification_required_desc">يجب عليك توثيق حساب مؤسستك للوصول إلى ميزات الإدارة ونشر فرص تطوعية جديدة.</string>
+    <string name="verify_my_account_button">توثيق الحساب الآن</string>
 
+    <!-- تعديل ملف المؤسسة -->
     <string name="edit_org_profile_title">تعديل ملف المؤسسة</string>
     <string name="org_name_label">اسم المؤسسة</string>
     <string name="phone_number_label">رقم الهاتف</string>
-    <string name="license_number_label">رقم الرخصة</string>
-    <string name="select_category_hint">اختر الفئة</string>
-    <string name="category_type_label">الفئة / النوع</string>
+    <string name="license_number_label">رقم الترخيص</string>
+    <string name="select_category_hint">اختر التصنيف</string>
+    <string name="category_type_label">التصنيف / النوع</string>
     <string name="update_success_msg">تم التحديث بنجاح</string>
     <string name="save_changes_button">حفظ التغييرات</string>
 
+    <!-- تفاصيل المؤسسة -->
     <string name="logout_button">تسجيل الخروج</string>
     <string name="default_org_name">اسم المؤسسة</string>
     <string name="default_email">email@example.com</string>
@@ -219,35 +229,63 @@
     <string name="license_id_label">رقم الترخيص</string>
     <string name="na_value">غير متوفر</string>
     <string name="about_us_title">من نحن</string>
-    <string name="no_description_provided">لا يوجد وصف متاح لهذه المؤسسة.</string>
+    - <string name="no_description_provided">لا يوجد وصف متوفر لهذه المؤسسة.</string>
     <string name="edit_profile_button">تعديل الملف الشخصي</string>
-    <string name="verified_content_desc">معتمد</string>
+    <string name="verified_content_desc">موثق</string>
 
+    <!-- مراجعة الطلبات -->
     <string name="total_applications">إجمالي الطلبات: %d</string>
-    <string name="no_requests_format">لا توجد طلبات %s</string>
+    <string name="no_requests_format">لا توجد طلبات (%s)</string>
     <string name="reject">رفض</string>
     <string name="accept">قبول</string>
     <string name="accepted_status">تم القبول ✓</string>
     <string name="rejected_status">تم الرفض ✗</string>
 
+    <!-- الانضمام والنماذج المتنوعة -->
     <string name="success_joined">تم الانضمام إلى الفرصة بنجاح!</string>
     <string name="fail_joined">فشل الانضمام. يرجى المحاولة مرة أخرى.</string>
-    <string name="new_application_title">طلب انضمام جديد</string>
-    <string name="new_application_message_format">قام طالب بالانضمام إلى فرصتك التطوعية: %s</string>
-    <string name="token_not_found">لم يتم العثور على رمز المصادقة.</string>
+    <string name="new_application_title">طلب جديد</string>
+    <string name="new_application_message_format">تقدم طالب إلى فرصتك التطوعية: %s</string>
+    <string name="token_not_found">رمز المصادقة غير موجود.</string>
     <string name="back_desc">رجوع</string>
-    <string name="org_id_format">المؤسسة #%d</string>
+    <string name="org_id_format">مؤسسة #%d</string>
     <string name="na_status">غير متوفر</string>
     <string name="label_location">الموقع</string>
     <string name="label_hours">الساعات</string>
-    <string name="hours_format">+%dساعة</string>
+    <string name="hours_format">+%dh</string>
     <string name="label_seats_left">المقاعد المتبقية</string>
     <string name="seats_format">%d/%d</string>
     <string name="label_deadline">الموعد النهائي</string>
     <string name="section_description">الوصف</string>
-    <string name="no_description">لا يوجد وصف متاح.</string>
+    <string name="no_description">لا يوجد وصف متوفر.</string>
 
     <string name="error_student_id_not_found">خطأ: لم يتم العثور على رقم الطالب!</string>
-    <string name="apps_closed">الفرصة مغلقة</string>
+    <string name="apps_closed">التسجيل مغلق</string>
 
+    <!-- شاشة لوحة تحكم المشرف (Admin) -->
+    <string name="admin_dashboard_title">لوحة تحكم المشرف (Admin)</string>
+    <string name="admin_logout_content_desc">تسجيل الخروج</string>
+
+    <!-- تبويبات لوحة التحكم -->
+    <string name="tab_pending_orgs">طلبات التوثيق</string>
+    <string name="tab_activities_management">إدارة الأنشطة</string>
+    <string name="tab_reports_stats">التقارير والإحصائيات</string>
+
+    <!-- تبويب طلبات المؤسسات المعلقة -->
+    <string name="pending_orgs_count">طلبات التوثيق المعلقة (%d)</string>
+    <string name="no_pending_orgs">لا توجد طلبات توثيق معلقة حالياً. 👍</string>
+    <string name="contact_phone_label">رقم التواصل</string>
+    <string name="no_org_description">لا يوجد وصف متوفر للمؤسسة.</string>
+    <string name="btn_approve">قبول</string>
+    <string name="btn_reject">رفض</string>
+
+    <!-- تبويب إدارة الأنشطة -->
+    <string name="activities_management_count">إدارة الأنشطة والفعاليات (%d)</string>
+    <string name="no_activities_registered">لا توجد أنشطة مسجلة حالياً.</string>
+    <string name="default_activity_title">نشاط بدون عنوان</string>
+    <string name="default_activity_description">لا يوجد وصف</string>
+
+    <!-- تبويب التقارير والإحصائيات -->
+    <string name="reports_stats_title">تقارير ساعات التطوع وإحصائيات النظام</string>
+    <string name="reports_stats_subtitle">تم جلب وإعداد كافة تقارير المؤسسات وساعات التطوع بنجاح.</string>
 </resources>

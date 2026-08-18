@@ -27,6 +27,10 @@ import com.example.volunteerbridge.app.R
 import com.example.volunteerbridge.viewmodelApi.AuthViewModelApi
 import com.valentinilk.shimmer.shimmer
 
+/**
+ * شاشة ملف تعريف الطالب (Student Profile Screen)
+ * تعرض معلومات الحساب الشخصية، الأكاديمية، إحصائيات الساعات التطوعية، وإمكانية تسجيل الخروج
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StudentProfileScreen(
@@ -223,6 +227,9 @@ fun StudentProfileScreen(
     }
 }
 
+/**
+ * مكون هيكل التحميل المتلألئ (Shimmer) لشاشة البروفايل
+ */
 @Composable
 fun ProfileScreenShimmer() {
     val colorScheme = MaterialTheme.colorScheme
@@ -286,6 +293,9 @@ fun ProfileScreenShimmer() {
     }
 }
 
+/**
+ * مكون صف عرض المعلومات الفردية (ProfileInfoRow) مع الأيقونة والتسمية والقيمة
+ */
 @Composable
 fun ProfileInfoRow(icon: ImageVector, label: String, value: String) {
     val colorScheme = MaterialTheme.colorScheme

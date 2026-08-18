@@ -1,4 +1,5 @@
 <resources>
+    <!-- App & Welcome -->
     <string name="app_name">Volunteer Bridge</string>
     <string name="description_app">The Volunteer Bridge\nA digital platform to organize volunteer work under the supervision of the IUG</string>
 
@@ -7,6 +8,7 @@
     <string name="page_2">This application was created by students of the IUG</string>
     <string name="page_3">Start looking for your chance to volunteer</string>
 
+    <!-- Auth & Account Creation -->
     <string name="name">Organization Name</string>
     <string name="password">Password</string>
     <string name="email">Email Address</string>
@@ -24,6 +26,7 @@
     <string name="savedData">Creating account and saving data…</string>
     <string name="verification">Your account will be verified by the university admin.</string>
 
+    <!-- Error Messages -->
     <string name="err_fill">Please fill in all required fields</string>
     <string name="err_name_req">Organization name is required</string>
     <string name="err_email_invalid">Please enter a valid email address</string>
@@ -34,6 +37,8 @@
     <string name="err_pass_digit">Password must contain at least one number</string>
     <string name="err_pass_upper">Password must contain an uppercase letter</string>
     <string name="err_pass_match">Passwords do not match</string>
+
+    <!-- General Labels & Hours -->
     <string name="TotalHours">"Your Total Volunteer Hours: "</string>
     <string name="hour">0 Hour</string>
     <string name="manageOpp">Manage Opportunities</string>
@@ -42,7 +47,7 @@
     <string name="DetailOpp">Detail Opportunity</string>
     <string name="app">Applicant Requests</string>
 
-    <!-- Welcome & General -->
+    <!-- Welcome & General UI -->
     <string name="welcome_message">Welcome, %1$s!</string>
     <string name="welcome_default">Welcome!</string>
     <string name="ready_to_impact">Ready to make an impact today?</string>
@@ -130,6 +135,7 @@
     <string name="select_date">Select Date</string>
     <string name="back">Back</string>
 
+    <!-- Organization Stats & Dashboard -->
     <string name="organization_default_name">Organization</string>
     <string name="stat_active_ops">Active Ops</string>
     <string name="stat_applicants">Applicants</string>
@@ -143,6 +149,7 @@
     <string name="status_active_label">Active</string>
     <string name="no_recent_activity">No recent activity yet</string>
 
+    <!-- Manage Volunteers -->
     <string name="manage_volunteers_title">Manage Volunteers</string>
     <string name="no_active_volunteers_yet">No active volunteers in this opportunity yet.</string>
     <string name="finalize_all_for_everyone">Finalize All for Everyone</string>
@@ -155,11 +162,13 @@
     <string name="hrs_reward_format">%d Hrs Reward</string>
     <string name="finalize_and_credit">Finalize &amp; Credit</string>
 
+    <!-- Notifications & Errors -->
     <string name="error_org_id_not_found">Error: Organization ID not found!</string>
     <string name="all_notifications_marked_read">All notifications marked as read</string>
     <string name="cannot_update_notifications_missing_id">Cannot update notifications: ID is missing</string>
     <string name="invalid_notification_id">Invalid notification ID</string>
 
+    <!-- Opportunity Details -->
     <string name="manage_opportunity">Manage Opportunity</string>
     <string name="category">Category</string>
     <string name="not_set">Not set</string>
@@ -171,12 +180,14 @@
     <string name="reserved_slots_label">Reserved Slots</string>
     <string name="remaining_slots_label">Remaining Slots</string>
 
+    <!-- Manage Opportunities -->
     <string name="manage_opportunities_title">Manage Opportunities</string>
     <string name="back_content_description">Back</string>
     <string name="add_opportunity_content_description">Add Opportunity</string>
     <string name="edit_button">Edit</string>
     <string name="details_button">Details</string>
 
+    <!-- Create Opportunity -->
     <string name="create_opportunity_title">Add New Volunteer Opportunity</string>
     <string name="basic_information">Basic Information</string>
     <string name="opportunity_title_label">Opportunity Title</string>
@@ -190,11 +201,13 @@
     <string name="opportunity_published_success">Opportunity published successfully!</string>
     <string name="publish_opportunity_button">Publish Opportunity Now</string>
 
+    <!-- Verification Banner -->
     <string name="lock_icon_desc">Lock Icon</string>
     <string name="verification_required_title">Account Verification Required</string>
     <string name="verification_required_desc">You must verify your organization account to access management features and post new volunteer opportunities.</string>
     <string name="verify_my_account_button">Verify My Account Now</string>
 
+    <!-- Edit Organization Profile -->
     <string name="edit_org_profile_title">Edit Organization Profile</string>
     <string name="org_name_label">Organization Name</string>
     <string name="phone_number_label">Phone Number</string>
@@ -204,6 +217,7 @@
     <string name="update_success_msg">Updated successfully</string>
     <string name="save_changes_button">Save Changes</string>
 
+    <!-- Org Details Profile -->
     <string name="logout_button">Logout</string>
     <string name="default_org_name">Organization Name</string>
     <string name="default_email">email@example.com</string>
@@ -219,6 +233,7 @@
     <string name="edit_profile_button">Edit Profile</string>
     <string name="verified_content_desc">Verified</string>
 
+    <!-- Applications Review -->
     <string name="total_applications">Total Applications: %d</string>
     <string name="no_requests_format">No %s requests</string>
     <string name="reject">Reject</string>
@@ -226,6 +241,7 @@
     <string name="accepted_status">Accepted ✓</string>
     <string name="rejected_status">Rejected ✗</string>
 
+    <!-- Join & Misc Formats -->
     <string name="success_joined">Successfully joined the opportunity!</string>
     <string name="fail_joined">Failed to join. Please try again.</string>
     <string name="new_application_title">New Application</string>
@@ -246,4 +262,30 @@
     <string name="error_student_id_not_found">Error: Student ID not found!</string>
     <string name="apps_closed">App Closed</string>
 
+    <!-- Admin Dashboard Screen -->
+    <string name="admin_dashboard_title">لوحة تحكم المشرف (Admin)</string>
+    <string name="admin_logout_content_desc">تسجيل الخروج</string>
+
+    <!-- Admin Tabs -->
+    <string name="tab_pending_orgs">طلبات التوثيق</string>
+    <string name="tab_activities_management">إدارة الأنشطة</string>
+    <string name="tab_reports_stats">التقارير والإحصائيات</string>
+
+    <!-- Pending Organizations Tab -->
+    <string name="pending_orgs_count">طلبات التوثيق المعلقة (%d)</string>
+    <string name="no_pending_orgs">لا توجد طلبات توثيق معلقة حالياً. 👍</string>
+    <string name="contact_phone_label">رقم التواصل</string>
+    <string name="no_org_description">لا يوجد وصف متوفر للمؤسسة.</string>
+    <string name="btn_approve">قبول</string>
+    <string name="btn_reject">رفض</string>
+
+    <!-- Activities Management Tab -->
+    <string name="activities_management_count">إدارة الأنشطة والفعاليات (%d)</string>
+    <string name="no_activities_registered">لا توجد أنشطة مسجلة حالياً.</string>
+    <string name="default_activity_title">نشاط بدون عنوان</string>
+    <string name="default_activity_description">لا يوجد وصف</string>
+
+    <!-- Reports & Stats Tab -->
+    <string name="reports_stats_title">تقارير ساعات التطوع وإحصائيات النظام</string>
+    <string name="reports_stats_subtitle">تم جلب وإعداد كافة تقارير المؤسسات وساعات التطوع بنجاح.</string>
 </resources>

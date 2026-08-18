@@ -174,19 +174,21 @@ class ParticipationViewModel : ViewModel() {
             }
         }
     }
-    fun completeParticipation(participationId: Int, onResult: (Boolean) -> Unit) {
+    fun completeParticipation(participationId: Int, hours: Int, onResult: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
-                val response = apiService.completeParticipation(participationId)
+                val requestBody = mapOf("hours" to hours)
+                val response = apiService.completeParticipation(participationId, requestBody)
+
                 if (response.isSuccessful) {
                     onResult(true)
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    android.util.Log.e("API_ERROR", "Complete failed with code ${response.code()}: $errorBody")
+                    Log.e("API_ERROR", "Complete failed with code ${response.code()}: $errorBody")
                     onResult(false)
                 }
             } catch (e: Exception) {
-                android.util.Log.e("API_EXCEPTION", "Exception: ${e.message}")
+                Log.e("API_EXCEPTION", "Exception: ${e.message}")
                 onResult(false)
             }
         }
