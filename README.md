@@ -59,6 +59,24 @@ Project Structure :
   └── viewmodelApi/     # نماذج العرض (ViewModels) لإدارة منطق الشاشات والربط مع الـ API
 
 
+  ### لقطات من التطبيق (App Screenshots):
+
+#### شاشة تسجيل الدخول (Login)
+![Login Screen](images/Login.png)
+
+#### شاشة التسجيل (Signup)
+![Signup Screen](images/Signup.png)
+
+#### شاشة الطالب (Student)
+![Student Screen](images/Student.png)
+
+#### شاشة المشرف (Admin)
+![Admin Screen](images/Admin.png)
+
+#### شاشة الجهة / المؤسسة (Org)
+![Org Screen](images/Org.png)
+
+
 
 Developed By :
   Yahya Abo Solyman - Information Technology Student at the Islamic University of Gaza.
